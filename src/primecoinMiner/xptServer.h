@@ -2,26 +2,26 @@ typedef struct _xptServer_t xptServer_t;
 
 typedef struct  
 {
-	uint8* buffer;
-	uint32 parserIndex;
-	uint32 bufferLimit; // current maximal size of buffer
-	uint32 bufferSize; // current effective size of buffer
+	uint8_t* buffer;
+	uint32_t parserIndex;
+	uint32_t bufferLimit; // current maximal size of buffer
+	uint32_t bufferSize; // current effective size of buffer
 }xptPacketbuffer_t;
 
 typedef struct  
 {
-	uint8 merkleRoot[32];
-	uint32 seed;
+	uint8_t merkleRoot[32];
+	uint32_t seed;
 }xptWorkData_t;
 
 typedef struct  
 {
-	uint32 height;
-	uint32 version;
-	uint32 nTime;
-	uint32 nBits;
-	uint32 nBitsShare;
-	uint8 prevBlock[32];
+	uint32_t height;
+	uint32_t version;
+	uint32_t nTime;
+	uint32_t nBits;
+	uint32_t nBitsShare;
+	uint8_t prevBlock[32];
 }xptBlockWorkInfo_t;
 
 typedef struct _xptServer_t 
@@ -34,10 +34,10 @@ typedef struct _xptServer_t
 	simpleList_t* list_connections;
 	xptPacketbuffer_t* sendBuffer; // shared buffer for sending data
 	// last known block height (for new block detection)
-	uint32 coinTypeBlockHeight[32];
+	uint32_t coinTypeBlockHeight[32];
 	// callbacks
-	bool (*xptCallback_generateWork)(xptServer_t* xptServer, uint32 numOfWorkEntries, uint32 coinTypeIndex, xptBlockWorkInfo_t* xptBlockWorkInfo, xptWorkData_t* xptWorkData);
-	void (*xptCallback_getBlockHeight)(xptServer_t* xptServer, uint32* coinTypeNum, uint32* blockHeightPerCoinType);
+	bool(*xptCallback_generateWork)(xptServer_t* xptServer, uint32_t numOfWorkEntries, uint32_t coinTypeIndex, xptBlockWorkInfo_t* xptBlockWorkInfo, xptWorkData_t* xptWorkData);
+	void(*xptCallback_getBlockHeight)(xptServer_t* xptServer, uint32_t* coinTypeNum, uint32_t* blockHeightPerCoinType);
 }xptServer_t;
 
 typedef struct  
@@ -51,25 +51,25 @@ typedef struct
 	bool disconnected;
 	// recv buffer
 	xptPacketbuffer_t* packetbuffer;
-	uint32 recvIndex;
-	uint32 recvSize;
+	uint32_t recvIndex;
+	uint32_t recvSize;
 	// recv header info
-	uint32 opcode;
+	uint32_t opcode;
 	// authentication info
-	uint8 clientState;
+	uint8_t clientState;
 	char workerName[128];
 	char workerPass[128];
-	uint32 userId;
-	uint32 coinTypeIndex;
-	uint32 payloadNum;
+	uint32_t userId;
+	uint32_t coinTypeIndex;
+	uint32_t payloadNum;
 
-	//uint32 size;
+	//uint32_t size;
 	//// http auth
 	//bool useBasicHTTPAuth;
 	//char httpAuthUsername[64];
 	//char httpAuthPassword[64];
 	//// auto-diconnect
-	//uint32 connectionOpenedTimer;
+	//uint32_t connectionOpenedTimer;
 }xptServerClient_t;
 
 // client states
@@ -97,7 +97,7 @@ typedef struct
 #define XPT_ERROR_INVALID_COINTYPE	(3)
 
 // xpt general
-xptServer_t* xptServer_create(uint16 port);
+xptServer_t* xptServer_create(uint16_t port);
 void xptServer_startProcessing(xptServer_t* xptServer);
 
 // private packet handlers
@@ -107,25 +107,25 @@ bool xptServer_processPacket_authRequest(xptServer_t* xptServer, xptServerClient
 bool xptServer_sendBlockData(xptServer_t* xptServer, xptServerClient_t* xptServerClient);
 
 // packetbuffer
-xptPacketbuffer_t* xptPacketbuffer_create(uint32 initialSize);
+xptPacketbuffer_t* xptPacketbuffer_create(uint32_t initialSize);
 void xptPacketbuffer_free(xptPacketbuffer_t* pb);
-void xptPacketbuffer_changeSizeLimit(xptPacketbuffer_t* pb, uint32 sizeLimit);
+void xptPacketbuffer_changeSizeLimit(xptPacketbuffer_t* pb, uint32_t sizeLimit);
 
 
 void xptPacketbuffer_beginReadPacket(xptPacketbuffer_t* pb);
-uint32 xptPacketbuffer_getReadSize(xptPacketbuffer_t* pb);
+uint32_t xptPacketbuffer_getReadSize(xptPacketbuffer_t* pb);
 float xptPacketbuffer_readFloat(xptPacketbuffer_t* pb, bool* error);
-uint32 xptPacketbuffer_readU32(xptPacketbuffer_t* pb, bool* error);
-uint16 xptPacketbuffer_readU16(xptPacketbuffer_t* pb, bool* error);
-uint8 xptPacketbuffer_readU8(xptPacketbuffer_t* pb, bool* error);
-void xptPacketbuffer_readData(xptPacketbuffer_t* pb, uint8* data, uint32 length, bool* error);
+uint32_t xptPacketbuffer_readU32(xptPacketbuffer_t* pb, bool* error);
+uint16_t xptPacketbuffer_readU16(xptPacketbuffer_t* pb, bool* error);
+uint8_t xptPacketbuffer_readU8(xptPacketbuffer_t* pb, bool* error);
+void xptPacketbuffer_readData(xptPacketbuffer_t* pb, uint8_t* data, uint32_t length, bool* error);
 
-void xptPacketbuffer_beginWritePacket(xptPacketbuffer_t* pb, uint8 opcode);
-void xptPacketbuffer_writeU32(xptPacketbuffer_t* pb, bool* error, uint32 v);
-void xptPacketbuffer_writeU16(xptPacketbuffer_t* pb, bool* error, uint16 v);
-void xptPacketbuffer_writeU8(xptPacketbuffer_t* pb, bool* error, uint8 v);
-void xptPacketbuffer_writeData(xptPacketbuffer_t* pb, uint8* data, uint32 length, bool* error);
+void xptPacketbuffer_beginWritePacket(xptPacketbuffer_t* pb, uint8_t opcode);
+void xptPacketbuffer_writeU32(xptPacketbuffer_t* pb, bool* error, uint32_t v);
+void xptPacketbuffer_writeU16(xptPacketbuffer_t* pb, bool* error, uint16_t v);
+void xptPacketbuffer_writeU8(xptPacketbuffer_t* pb, bool* error, uint8_t v);
+void xptPacketbuffer_writeData(xptPacketbuffer_t* pb, uint8_t* data, uint32_t length, bool* error);
 void xptPacketbuffer_finalizeWritePacket(xptPacketbuffer_t* pb);
 
-void xptPacketbuffer_writeString(xptPacketbuffer_t* pb, char* stringData, uint32 maxStringLength, bool* error);
-void xptPacketbuffer_readString(xptPacketbuffer_t* pb, char* stringData, uint32 maxStringLength, bool* error);
+void xptPacketbuffer_writeString(xptPacketbuffer_t* pb, char* stringData, uint32_t maxStringLength, bool* error);
+void xptPacketbuffer_readString(xptPacketbuffer_t* pb, char* stringData, uint32_t maxStringLength, bool* error);

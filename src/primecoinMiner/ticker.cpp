@@ -1,7 +1,7 @@
 #include "ticker.h"
 
-uint64_t getTimeMilliseconds(void) {
-  uint64_t milliseconds = 0;
+time_t getTimeMilliseconds(void) {
+	time_t milliseconds = 0;
 #if (defined(__MACH__) && defined(__APPLE__))
   struct mach_timebase_info convfact;
   mach_timebase_info(&convfact); // get ticks->nanoseconds conversion factor

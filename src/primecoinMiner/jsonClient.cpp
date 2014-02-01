@@ -1,4 +1,4 @@
-#include"global.h"
+#include "global.h"
 #include "ticker.h"
 #include <iostream>
 
@@ -27,12 +27,12 @@ int jsonClient_openConnection(char *IP, int Port)
   addr.sin_port=htons(Port);
   addr.sin_addr.s_addr=inet_addr(IP);
   int result = connect(s,(sockaddr*)&addr,sizeof(sockaddr_in));
-#endif
 	if( result )
 	{
 		close(s);
 		return 0;
 	}
+#endif
 	return s;
 }
 
@@ -46,7 +46,7 @@ int base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len, cha
 	int j = 0;
 	unsigned char char_array_3[3];
 	unsigned char char_array_4[4];
-	sint32 outputLength = 0;
+	int32_t outputLength = 0;
 	while (in_len--) {
 		char_array_3[i++] = *(bytes_to_encode++);
 		if (i == 3) {
@@ -86,13 +86,13 @@ int base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len, cha
 	return outputLength;
 }
 
-unsigned char * base64_decode(const unsigned char *src, size_t len, uint8* out, sint32 *out_len)
+unsigned char * base64_decode(const unsigned char *src, size_t len, uint8_t* out, int32_t *out_len)
 {
 	unsigned char dtable[256], *pos, in[4], block[4], tmp;
 	size_t i, count, olen;
 	memset(dtable, 0x80, 256);
 	for (i = 0; i < 64; i++)
-		dtable[base64_chars[i]] = i;
+		dtable[base64_chars[i]] = (unsigned char)i;
 	dtable['='] = 0;
 	count = 0;
 	for (i = 0; i < len; i++) {
@@ -132,7 +132,7 @@ unsigned char * base64_decode(const unsigned char *src, size_t len, uint8* out, 
 	return out;
 }
 
-jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, fStr_t* fStr_parameterData, sint32* errorCode)
+jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, fStr_t* fStr_parameterData, int32_t* errorCode)
 {
   using namespace std;
 	*errorCode = JSON_ERROR_NONE;
@@ -161,8 +161,8 @@ jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, 
   err = fcntl(serverSocket, F_SETFL, flags); //ignore errors for now..
 #endif
 
-	//uint32 startTime = GetTickCount(); // todo: Replace with crossplatform method
-//  uint64 startTime = getTimeMilliseconds();   unused
+	//uint32_t startTime = GetTickCount(); // todo: Replace with crossplatform method
+//  uint64_t startTime = getTimeMilliseconds();   unused
 	// build json request data
 	// example: {"method": "getwork", "params": [], "id":0}
 	fStr_t* fStr_jsonRequestData = fStr_alloc(1024*512); // 64KB (this is also used as the recv buffer!)
@@ -186,32 +186,32 @@ jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, 
 			sprintf(authString, "%s:%s", server->authUser, server->authPass);
 		else
 			sprintf(authString, "%s", server->authUser); // without password
-		sint32 base64EncodedLength = base64_encode((const unsigned char*)authString, fStrLen(authString), authStringEncoded);
+		int32_t base64EncodedLength = base64_encode((const unsigned char*)authString, fStrLen(authString), authStringEncoded);
 		authStringEncoded[base64EncodedLength] = '\0';
 		fStr_appendFormatted(fStr_headerData, "Authorization: Basic %s\r\n", authStringEncoded);
 	}
-	fStr_appendFormatted(fStr_headerData, "Host: %s:%d\r\n", server->ip, (sint32)server->port);
+	fStr_appendFormatted(fStr_headerData, "Host: %s:%d\r\n", server->ip, (int32_t)server->port);
 	fStr_appendFormatted(fStr_headerData, "User-Agent: ypoolbackend 0.1\r\n");
 	fStr_appendFormatted(fStr_headerData, "Accept-Encoding: identity\r\n");
 	fStr_appendFormatted(fStr_headerData, "Content-Type: application/json\r\n");
 	fStr_appendFormatted(fStr_headerData, "Content-Length: %d\r\n", fStr_len(fStr_jsonRequestData));
 	fStr_appendFormatted(fStr_headerData, "\r\n"); // empty line concludes the header
 	// send header and data
-	uint64 startTime = getTimeMilliseconds();
+	uint64_t startTime = getTimeMilliseconds();
 	send(serverSocket, fStr_get(fStr_headerData), fStr_len(fStr_headerData), 0);
-//	std::cout << "Headers: " << fStr_get(fStr_headerData) << std::endl;
+	//std::cout << "Headers: " << fStr_get(fStr_headerData) << std::endl;
 	send(serverSocket, fStr_get(fStr_jsonRequestData), fStr_len(fStr_jsonRequestData), 0);
-//	std::cout << "Request: " << fStr_get(fStr_jsonRequestData) << std::endl;
+	//std::cout << "Request: " << fStr_get(fStr_jsonRequestData) << std::endl;
 	// receive header and request data
-	uint8* recvBuffer = (uint8*)fStr_get(fStr_jsonRequestData);
-	uint32 recvLimit = fStr_getLimit(fStr_jsonRequestData);
-	uint32 recvIndex = 0;
-	uint32 recvDataSizeFull = 0;
-	uint32 recvDataHeaderEnd = 0;
+	uint8_t* recvBuffer = (uint8_t*)fStr_get(fStr_jsonRequestData);
+	uint32_t recvLimit = fStr_getLimit(fStr_jsonRequestData);
+	uint32_t recvIndex = 0;
+	uint32_t recvDataSizeFull = 0;
+	uint32_t recvDataHeaderEnd = 0;
 	// recv
 	while( true )
 	{
-		sint32 remainingRecvSize = (sint32)recvLimit - recvIndex;
+		int32_t remainingRecvSize = (int32_t)recvLimit - recvIndex;
 		if( remainingRecvSize == 0 )
 		{
 			printf("JSON-RPC warning: Response is larger than buffer\n");
@@ -236,8 +236,8 @@ jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, 
 		n = select(serverSocket, &fds, NULL, NULL, &tv ) ;
 /*		if( n == 0)
 		{
-			//uint32 passedTime = GetTickCount() - startTime;
-      uint64 passedTime = getTimeMilliseconds() - startTime;
+			//uint32_t passedTime = GetTickCount() - startTime;
+      uint64_t passedTime = getTimeMilliseconds() - startTime;
 			printf("JSON request timed out after %lums\n", passedTime);
     
 			break;
@@ -269,11 +269,11 @@ jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, 
 			if( recvDataHeaderEnd == 0 )
 			{
 				// did we receive the end of the header already?
-				sint32 scanStart = (sint32)recvIndex - (sint32)r;
+				int32_t scanStart = (int32_t)recvIndex - (int32_t)r;
 				scanStart = std::max(scanStart-8, 0);
-				sint32 scanEnd = (sint32)(recvIndex);
+				int32_t scanEnd = (int32_t)(recvIndex);
 				scanEnd = std::max(scanEnd-4, 0);
-				for(sint32 s=scanStart; s<=scanEnd; s++)
+				for(int32_t s=scanStart; s<=scanEnd; s++)
 				{
 					// is header end?
 					if( recvBuffer[s+0] == '\r' &&
@@ -298,7 +298,7 @@ jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, 
 						// *) the 4 bytes at the end will always be \r\n\r\n
 						char* endOfHeaderPtr = (char*)(recvBuffer+s);
 						char* parsePtr = (char*)recvBuffer;
-						sint32 contentLength = -1;
+						int32_t contentLength = -1;
 						while( parsePtr < endOfHeaderPtr )
 						{
 							// is content-length parameter?
@@ -318,7 +318,7 @@ jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, 
 							if( (endOfHeaderPtr-parsePtr) >= 10 && memcmp(parsePtr, "HTTP/1.0 ", 9) == 0 )
 							{
 								// parameter found
-								sint32 httpCode = atoi(parsePtr+9);
+								int32_t httpCode = atoi(parsePtr+9);
 								if( httpCode == 401 )
 								{
 									printf("JSON-RPC: Request failed, authorization required (wrong login data)\n");
@@ -369,7 +369,7 @@ jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, 
 				//jsonRpc_processRequest(jrs, client);
 				//// wipe processed packet and shift remaining data back
 				//client->recvDataHeaderEnd = 0;
-				//uint32 pRecvIndex = client->recvIndex;
+				//uint32_t pRecvIndex = client->recvIndex;
 				//client->recvIndex -= client->recvDataSizeFull;
 				//client->recvDataSizeFull = 0;
 				//if( client->recvIndex > 0 )
@@ -392,9 +392,9 @@ jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, 
 		}
 		// get request result data
 		char* requestData = (char*)(recvBuffer+recvDataHeaderEnd);
-		sint32 requestLength = (sint32)(recvDataSizeFull - recvDataHeaderEnd);
+		int32_t requestLength = (int32_t)(recvDataSizeFull - recvDataHeaderEnd);
 		// parse data
-		jsonObject_t* jsonObjectReturn = jsonParser_parse((uint8*)requestData, requestLength);
+		jsonObject_t* jsonObjectReturn = jsonParser_parse((uint8_t*)requestData, requestLength);
 		if( jsonObjectReturn == NULL )
 		{
 			*errorCode = JSON_ERROR_UNABLE_TO_PARSE;

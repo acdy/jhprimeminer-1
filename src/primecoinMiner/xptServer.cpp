@@ -14,7 +14,7 @@ typedef struct sockaddr SOCKADDR;
 /*
  * Creates a new x.pushthrough server instance that listens on the specified port
  */
-xptServer_t* xptServer_create(uint16 port)
+xptServer_t* xptServer_create(uint16_t port)
 {
 	xptServer_t* xptServer = (xptServer_t*)malloc(sizeof(xptServer_t));
 	memset(xptServer, 0x00, sizeof(xptServer_t));
@@ -84,12 +84,12 @@ bool xptServer_processPacket(xptServer_t* xptServer, xptServerClient_t* xptServe
  */
 bool xptServer_receiveData(xptServer_t* xptServer, xptServerClient_t* xptServerClient)
 {
-	sint32 packetFullSize = 4; // the packet always has at least the size of the header
+	int32_t packetFullSize = 4; // the packet always has at least the size of the header
 	if( xptServerClient->recvSize > 0 )
 		packetFullSize += xptServerClient->recvSize;
-	sint32 bytesToReceive = (sint32)(packetFullSize - xptServerClient->recvIndex);
+	int32_t bytesToReceive = (int32_t)(packetFullSize - xptServerClient->recvIndex);
 	// packet buffer is always large enough at this point
-	sint32 r = recv(xptServerClient->clientSocket, (char*)(xptServerClient->packetbuffer->buffer+xptServerClient->recvIndex), bytesToReceive, 0);
+	int32_t r = recv(xptServerClient->clientSocket, (char*)(xptServerClient->packetbuffer->buffer+xptServerClient->recvIndex), bytesToReceive, 0);
 	if( r <= 0 )
 	{
 		// receive error, client disconnected
@@ -100,9 +100,9 @@ bool xptServer_receiveData(xptServer_t* xptServer, xptServerClient_t* xptServerC
 	if( xptServerClient->recvIndex == packetFullSize && packetFullSize == 4 )
 	{
 		// process header
-		uint32 headerVal = *(uint32*)xptServerClient->packetbuffer->buffer;
-		uint32 opcode = (headerVal&0xFF);
-		uint32 packetDataSize = (headerVal>>8)&0xFFFFFF;
+		uint32_t headerVal = *(uint32_t*)xptServerClient->packetbuffer->buffer;
+		uint32_t opcode = (headerVal&0xFF);
+		uint32_t packetDataSize = (headerVal>>8)&0xFFFFFF;
 		// validate header size
 		if( packetDataSize >= (1024*1024*2-4) )
 		{
@@ -144,13 +144,13 @@ void xptServer_deleteClient(xptServer_t* xptServer, xptServerClient_t* xptServer
 /*
  * Sends new block data to each client
  */
-void xptServer_sendNewBlockToAll(xptServer_t* xptServer, uint32 coinTypeIndex)
+void xptServer_sendNewBlockToAll(xptServer_t* xptServer, uint32_t coinTypeIndex)
 {
   using namespace std;
-	uint64 time1 = getTimeMilliseconds();
-	sint32 workerCount = 0;
-	sint32 payloadCount = 0;
-	for(uint32 i=0; i<xptServer->list_connections->objectCount; i++)
+	uint64_t time1 = getTimeMilliseconds();
+	int32_t workerCount = 0;
+	int32_t payloadCount = 0;
+	for(uint32_t i=0; i<xptServer->list_connections->objectCount; i++)
 	{
 		xptServerClient_t* xptServerClient = (xptServerClient_t*)xptServer->list_connections->objects[i];
 		if( xptServerClient->disconnected || xptServerClient->clientState != XPT_CLIENT_STATE_LOGGED_IN )
@@ -162,7 +162,7 @@ void xptServer_sendNewBlockToAll(xptServer_t* xptServer, uint32 coinTypeIndex)
 		workerCount++;
 		payloadCount += xptServerClient->payloadNum;
 	}
-	uint64 time2 = getTimeMilliseconds() - time1;
+	uint64_t time2 = getTimeMilliseconds() - time1;
 	std::cout << "Send " << payloadCount << " blocks to " << workerCount << " workers in " << time2 << "ms" << std::endl;
 }
 
@@ -171,10 +171,10 @@ void xptServer_sendNewBlockToAll(xptServer_t* xptServer, uint32 coinTypeIndex)
  */
 void xptServer_checkForNewBlocks(xptServer_t* xptServer)
 {
-	uint32 numberOfCoinTypes = 0;
-	uint32 blockHeightPerCoinType[32] = {0};
+	uint32_t numberOfCoinTypes = 0;
+	uint32_t blockHeightPerCoinType[32] = {0};
 	xptServer->xptCallback_getBlockHeight(xptServer, &numberOfCoinTypes, blockHeightPerCoinType);
-	for(uint32 i=0; i<numberOfCoinTypes; i++)
+	for(uint32_t i=0; i<numberOfCoinTypes; i++)
 	{
 		if( blockHeightPerCoinType[i] > xptServer->coinTypeBlockHeight[i] )
 		{
@@ -201,13 +201,13 @@ void xptServer_startProcessing(xptServer_t* xptServer)
 		// add server accept socket
 		FD_SET(xptServer->acceptSocket, &fd); // this line crashes?
 		// add all connected sockets
-		for(uint32 i=0; i<xptServer->list_connections->objectCount; i++)
+		for(uint32_t i=0; i<xptServer->list_connections->objectCount; i++)
 		{
 			xptServerClient_t* client = (xptServerClient_t*)simpleList_get(xptServer->list_connections, i);
 			FD_SET(client->clientSocket, &fd);
 		}
 		// check for socket events
-		sint32 r = select(0, &fd, 0, 0, &sTimeout); // wait one second
+		int32_t r = select(0, &fd, 0, 0, &sTimeout); // wait one second
 		if( r )
 		{
 			// check for new connections
@@ -217,7 +217,7 @@ void xptServer_startProcessing(xptServer_t* xptServer)
 				continue; // todo: this causes a bug without continue?
 			}
 			// check for client data received
-			for(uint32 i=0; i<xptServer->list_connections->objectCount; i++)
+			for(uint32_t i=0; i<xptServer->list_connections->objectCount; i++)
 			{
 				xptServerClient_t* client = (xptServerClient_t*)simpleList_get(xptServer->list_connections, i);
 				if( FD_ISSET(client->clientSocket, &fd) )
@@ -257,9 +257,9 @@ void xptServer_startProcessing(xptServer_t* xptServer)
 		// check all clients for connection blocking
 		// other stuff
 		//client->connectionOpenedTimer = GetTickCount();
-		//uint32 connectionTimeout = 35*1000;
-		//uint32 currentTimeoutTimer = GetTickCount();
-		//for(uint32 i=0; i<jrs->list_connections->objectCount; i++)
+		//uint32_t connectionTimeout = 35*1000;
+		//uint32_t currentTimeoutTimer = GetTickCount();
+		//for(uint32_t i=0; i<jrs->list_connections->objectCount; i++)
 		//{
 		//	xptServerClient_t* client = (xptServerClient_t*)simpleList_get(jrs->list_connections, i);
 		//	if( currentTimeoutTimer > (client->connectionOpenedTimer+connectionTimeout) )

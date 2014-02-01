@@ -58,12 +58,12 @@ bitmap_t *bmp_load(char *path)
 		vbmp->data = BitmapData;
 
 		// load each line directly into memory (BMPs are stored upside-down in most cases, if not, height is negative)
-		for(uint32 y=0; y<vbmp->sizeY; y++)
+		for(int32_t y=0; y<vbmp->sizeY; y++)
 		{
 			ReadFile(hBG, (PVOID)(BitmapData+((vbmp->sizeY-1-y)*(vbmp->sizeX))*3), (vbmp->sizeX*3), &BT, 0);
 			// read padding
-			uint8 padBuffer[4];
-			sint32 lineSize = (vbmp->sizeX*3);
+			uint8_t padBuffer[4];
+			int32_t lineSize = (vbmp->sizeX*3);
 			lineSize = 4-(lineSize&3);
 			lineSize &= 3;
 			if( lineSize )
@@ -113,7 +113,7 @@ bool bmp_save(char *path, bitmap_t *bitmap)
 		bmp_ih.biClrImportant  = 0;
 
 
-		sint32 pixelRowSize = (bitmap->sizeX*3);
+		int32_t pixelRowSize = (bitmap->sizeX*3);
 		pixelRowSize = 4-(pixelRowSize&3);
 		pixelRowSize &= 3;
 
@@ -127,12 +127,12 @@ bool bmp_save(char *path, bitmap_t *bitmap)
 		// load each line directly into memory (BMPs are stored upside-down in most cases, if not, height is negative)
 		if( bitmap->bitDepth == 24 )
 		{
-			for(uint32 y=0; y<bitmap->sizeY; y++)
+			for(int32_t y=0; y<bitmap->sizeY; y++)
 			{
 				WriteFile(hBG, (PVOID)(BitmapData+((bitmap->sizeY-1-y)*(bitmap->sizeX))*3), (bitmap->sizeX*3), &BT, 0);
 				// padding
-				uint8 padBuffer[4] = {0};
-				sint32 lineSize = (bitmap->sizeX*3);
+				uint8_t padBuffer[4] = {0};
+				int32_t lineSize = (bitmap->sizeX*3);
 				lineSize = 4-(lineSize&3);
 				lineSize &= 3;
 				if( lineSize )
@@ -141,7 +141,7 @@ bool bmp_save(char *path, bitmap_t *bitmap)
 		}
 		else if( bitmap->bitDepth == 32 )
 		{
-			for(uint32 y=0; y<bitmap->sizeY; y++)
+			for(int32_t y=0; y<bitmap->sizeY; y++)
 			{
 				WriteFile(hBG, (PVOID)(BitmapData+((bitmap->sizeY-1-y)*(bitmap->sizeX))*4), (bitmap->sizeX*4), &BT, 0);
 				//TODO: Read align padding data (rows are aligned to 4 bytes?)

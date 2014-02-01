@@ -10,11 +10,11 @@ jsonObject_t* jsonObject_getParameter(jsonObject_t* jsonObject, char* name)
 	if( jsonObject->type != JSON_TYPE_OBJECT )
 		return NULL;
 	jsonObjectRawObject_t* jsonObjectRawObject = (jsonObjectRawObject_t*)jsonObject;
-	uint32 strLen = fStrLen(name);
-	for(uint32 i=0; i<jsonObjectRawObject->list_paramPairs->objectCount; i++)
+	uint32_t strLen = fStrLen(name);
+	for(uint32_t i=0; i<jsonObjectRawObject->list_paramPairs->objectCount; i++)
 	{
 		jsonObjectRawObjectParameter_t* objParam = (jsonObjectRawObjectParameter_t*)customBuffer_get(jsonObjectRawObject->list_paramPairs, i);
-		if( objParam->stringNameLength != strLen || fStrCmpCaseInsensitive((uint8*)name, objParam->stringNameData, strLen) )
+		if( objParam->stringNameLength != strLen || fStrCmpCaseInsensitive((uint8_t*)name, objParam->stringNameData, strLen) )
 			continue;
 		return objParam->jsonObjectValue;
 	}
@@ -24,7 +24,7 @@ jsonObject_t* jsonObject_getParameter(jsonObject_t* jsonObject, char* name)
 /*
  * Gets the size of the array in elements
  */
-uint32 jsonObject_getArraySize(jsonObject_t* jsonObject)
+uint32_t jsonObject_getArraySize(jsonObject_t* jsonObject)
 {
 	if( jsonObject->type != JSON_TYPE_ARRAY )
 		return NULL;
@@ -34,7 +34,7 @@ uint32 jsonObject_getArraySize(jsonObject_t* jsonObject)
 /*
  * Returns the n-th element of an json array
  */
-jsonObject_t* jsonObject_getArrayElement(jsonObject_t* jsonObject, uint32 index)
+jsonObject_t* jsonObject_getArrayElement(jsonObject_t* jsonObject, uint32_t index)
 {
 	if( jsonObject->type != JSON_TYPE_ARRAY )
 		return NULL;
@@ -47,7 +47,7 @@ jsonObject_t* jsonObject_getArrayElement(jsonObject_t* jsonObject, uint32 index)
 /*
  * Returns the type of the json object
  */
-uint32 jsonObject_getType(jsonObject_t* jsonObject)
+uint32_t jsonObject_getType(jsonObject_t* jsonObject)
 {
 	return jsonObject->type;
 }
@@ -78,32 +78,32 @@ double jsonObject_getNumberValueAsDouble(jsonObject_t* jsonObject)
 /*
  * Returns the value of the number as a signed integer
  */
-sint32 jsonObject_getNumberValueAsS32(jsonObject_t* jsonObject)
+int32_t jsonObject_getNumberValueAsS32(jsonObject_t* jsonObject)
 {
 	if( jsonObject->type != JSON_TYPE_NUMBER )
 		return 0;
 	jsonObjectNumber_t* jsonObjectNumber = (jsonObjectNumber_t*)jsonObject;
-	sint64 v = (sint64)jsonObjectNumber->number / (sint64)jsonObjectNumber->divider;
-	return (sint32)v;
+	int64_t v = (int64_t)jsonObjectNumber->number / (int64_t)jsonObjectNumber->divider;
+	return (int32_t)v;
 }
 
 /*
  * Returns the value of the number as a unsigned integer
  */
-uint32 jsonObject_getNumberValueAsU32(jsonObject_t* jsonObject)
+uint32_t jsonObject_getNumberValueAsU32(jsonObject_t* jsonObject)
 {
 	if( jsonObject->type != JSON_TYPE_NUMBER )
 		return 0;
 	jsonObjectNumber_t* jsonObjectNumber = (jsonObjectNumber_t*)jsonObject;
-	sint64 v = (sint64)jsonObjectNumber->number / (sint64)jsonObjectNumber->divider;
-	return (uint32)v;
+	int64_t v = (int64_t)jsonObjectNumber->number / (int64_t)jsonObjectNumber->divider;
+	return (uint32_t)v;
 }
 
 /*
  * Returns string info if the given jsonObject is of type string
  * Returns a valid pointer even if the string has a length of zero
  */
-uint8* jsonObject_getStringData(jsonObject_t* jsonObject, uint32* length)
+uint8_t* jsonObject_getStringData(jsonObject_t* jsonObject, uint32_t* length)
 {
 	if( jsonObject->type != JSON_TYPE_STRING )
 		return NULL;
@@ -115,7 +115,7 @@ uint8* jsonObject_getStringData(jsonObject_t* jsonObject, uint32* length)
 /*
  * Frees the string data allocated by _readString()
  */
-void jsonObject_freeStringData(uint8* stringBuffer)
+void jsonObject_freeStringData(uint8_t* stringBuffer)
 {
 	if( stringBuffer == NULL )
 		return;
@@ -129,7 +129,7 @@ void jsonObject_freeStringData(uint8* stringBuffer)
  */
 void jsonObject_destroyRawObject(jsonObjectRawObject_t* jsonObjectRawObject)
 {
-	for(uint32 i=0; i<jsonObjectRawObject->list_paramPairs->objectCount; i++)
+	for(uint32_t i=0; i<jsonObjectRawObject->list_paramPairs->objectCount; i++)
 	{
 		jsonObjectRawObjectParameter_t* objParam = (jsonObjectRawObjectParameter_t*)customBuffer_get(jsonObjectRawObject->list_paramPairs, i);
 		jsonObject_freeStringData(objParam->stringNameData);
@@ -144,7 +144,7 @@ void jsonObject_destroyRawObject(jsonObjectRawObject_t* jsonObjectRawObject)
  */
 void jsonObject_destroyArray(jsonObjectArray_t* jsonObjectArray)
 {
-	for(uint32 i=0; i<jsonObjectArray->list_values->objectCount; i++)
+	for(uint32_t i=0; i<jsonObjectArray->list_values->objectCount; i++)
 	{
 		jsonObject_t* objValue = (jsonObject_t*)simpleList_get(jsonObjectArray->list_values, i);
 		jsonObject_freeObject(objValue);

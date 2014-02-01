@@ -16,7 +16,7 @@ typedef struct
 	char *categoryName;
 	DWORD categoryDataOffset;
 	// option data
-	int optionLineCount;
+	size_t optionLineCount;
 	sData_optionLine_t *optionLine;
 }sData_t;
 

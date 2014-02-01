@@ -207,7 +207,7 @@ float fileMgr_readFloat(file_t *file)
 	return value;
 }
 
-uint32 fileMgr_readData(file_t *file, void *data, int len)
+uint32_t fileMgr_readData(file_t *file, void *data, int len)
 {
 	DWORD BT;
 	ReadFile(file->hFile, (LPVOID)data, len, &BT, NULL);
@@ -266,26 +266,26 @@ unsigned int fileMgr_getSize(file_t *file)
 
 /* stream helper */
 
-uint32 __fastcall fileMgr_stream_readData(void *object, void *buffer, uint32 len)
+uint32_t __fastcall fileMgr_stream_readData(void *object, void *buffer, uint32_t len)
 {
 	file_t *file = (file_t*)object;
 	return fileMgr_readData(file, buffer, len);
 }
 
-uint32 __fastcall fileMgr_stream_writeData(void *object, void *buffer, uint32 len)
+uint32_t __fastcall fileMgr_stream_writeData(void *object, void *buffer, uint32_t len)
 {
 	file_t *file = (file_t*)object;
 	fileMgr_writeData(file, buffer, len);
 	return len;
 }
 
-uint32 __fastcall fileMgr_stream_getSize(void *object)
+uint32_t __fastcall fileMgr_stream_getSize(void *object)
 {
 	file_t *file = (file_t*)object;
 	return GetFileSize(file->hFile, NULL);
 }
 
-void __fastcall fileMgr_stream_setSize(void *object, uint32 size)
+void __fastcall fileMgr_stream_setSize(void *object, uint32_t size)
 {
 	file_t *file = (file_t*)object;
 	DWORD oldFileSeek = SetFilePointer(file->hFile, size, NULL, FILE_CURRENT);
@@ -294,13 +294,13 @@ void __fastcall fileMgr_stream_setSize(void *object, uint32 size)
 }
 
 
-uint32 __fastcall fileMgr_stream_getSeek(void *object)
+uint32_t __fastcall fileMgr_stream_getSeek(void *object)
 {
 	file_t *file = (file_t*)object;
 	return SetFilePointer(file->hFile, 0, NULL, FILE_CURRENT);
 }
 
-void __fastcall fileMgr_stream_setSeek(void *object, sint32 seek, bool relative)
+void __fastcall fileMgr_stream_setSeek(void *object, int32_t seek, bool relative)
 {
 	file_t *file = (file_t*)object;
 	if( relative )
@@ -319,12 +319,12 @@ void __fastcall fileMgr_stream_destroyStream(void *object, stream_t *stream)
 
 streamSettings_t fileStreamSettings =
 {
-	fileMgr_stream_readData,//uint32 (__fastcall *readData)(void *object, void *buffer, uint32 len);
-	fileMgr_stream_writeData,//uint32 (__fastcall *writeData)(void *object, void *buffer, uint32 len);
-	fileMgr_stream_getSize,//uint32 (__fastcall *getSize)(void *object);
+	fileMgr_stream_readData,//uint32_t (__fastcall *readData)(void *object, void *buffer, uint32_t len);
+	fileMgr_stream_writeData,//uint32_t (__fastcall *writeData)(void *object, void *buffer, uint32_t len);
+	fileMgr_stream_getSize,//uint32_t (__fastcall *getSize)(void *object);
 	fileMgr_stream_setSize,
-	fileMgr_stream_getSeek,//uint32 (__fastcall *getSeek)(void *object);
-	fileMgr_stream_setSeek,//void (__fastcall *setSeek)(void *object, sint32 seek, bool relative);
+	fileMgr_stream_getSeek,//uint32_t (__fastcall *getSeek)(void *object);
+	fileMgr_stream_setSeek,//void (__fastcall *setSeek)(void *object, int32_t seek, bool relative);
 	NULL,//void (__fastcall *initStream)(void *object, stream_t *stream);
 	fileMgr_stream_destroyStream,//void (__fastcall *destroyStream)(void *object, stream_t *stream);
 	true//bool allowCaching;	

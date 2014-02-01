@@ -7,14 +7,12 @@
 #include <time.h>
 #endif
 
+#include "inttype.h"
+
 #ifdef _WIN32
-#include<windows.h>
-typedef unsigned __int64 uint64_t;
-#else 
-#include <stdint.h>
-#include <errno.h>
+#include <Windows.h>
 #endif
 
-uint64_t getTimeMilliseconds(void);
+time_t getTimeMilliseconds(void);
 
 #endif // TICKER_H

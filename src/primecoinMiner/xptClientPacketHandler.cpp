@@ -13,7 +13,7 @@ bool xptClient_processPacket_authResponse(xptClient_t* xptClient)
 	// start parsing
 	bool readError = false;
 	// read error code field
-	uint32 authErrorCode = xptPacketbuffer_readU32(cpb, &readError);
+	uint32_t authErrorCode = xptPacketbuffer_readU32(cpb, &readError);
 	if( readError )
 		return false;
 	// read reject reason / motd
@@ -57,7 +57,7 @@ bool xptClient_processPacket_blockData1(xptClient_t* xptClient)
 	xptClient->blockWorkInfo.nBitsShare = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);		// nBitsRecommended / nBitsShare
 	xptClient->blockWorkInfo.nTime = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);			// nTimestamp
 	xptPacketbuffer_readData(xptClient->recvBuffer, xptClient->blockWorkInfo.prevBlock, 32, &recvError);	// prevBlockHash
-	uint32 payloadNum = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);							// payload num
+	uint32_t payloadNum = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);							// payload num
 	if( recvError )
 	{
 			std::cout << "xptClient_processPacket_blockData1(): Parse error" << std::endl;
@@ -68,7 +68,7 @@ bool xptClient_processPacket_blockData1(xptClient_t* xptClient)
 			std::cout << "xptClient_processPacket_blockData1(): Invalid payloadNum" << std::endl;
 		return false;
 	}
-	for(uint32 i=0; i<payloadNum; i++)
+	for(uint32_t i=0; i<payloadNum; i++)
 	{
 		// read merkle root for each work data entry
 		xptPacketbuffer_readData(xptClient->recvBuffer, xptClient->workData[i].merkleRoot, 32, &recvError);
@@ -94,7 +94,7 @@ bool xptClient_processPacket_shareAck(xptClient_t* xptClient)
 	// start parsing
 	bool readError = false;
 	// read error code field
-	uint32 shareErrorCode = xptPacketbuffer_readU32(cpb, &readError);
+	uint32_t shareErrorCode = xptPacketbuffer_readU32(cpb, &readError);
 	if( readError )
 		return false;
 	// read reject reason
@@ -136,18 +136,18 @@ bool xptClient_processPacket_client2ServerPing(xptClient_t* xptClient)
 	xptPacketbuffer_beginReadPacket(xptClient->recvBuffer);
 	xptClient->workDataValid = false;
 	// add general block info
-	uint32 version = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);			// version
-	uint32 tsLow = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);				// lower 32 bits of timestamp
-	uint32 tsHigh = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);				// upper 32 bits of timestamp
+	uint32_t version = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);			// version
+	uint32_t tsLow = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);				// lower 32 bits of timestamp
+	uint32_t tsHigh = xptPacketbuffer_readU32(xptClient->recvBuffer, &recvError);				// upper 32 bits of timestamp
 	if( recvError )
 	{
 			std::cout << "xptClient_processPacket_client2ServerPing(): Parse error" << std::endl;
 		return false;
 	}
 
-	uint64 pingSentTimestamp = ((uint64) tsLow) | (((uint64) tsHigh) << 32);
-	uint64 now = getTimeMilliseconds();
-	uint64 roundtrip = now - pingSentTimestamp;
+	uint64_t pingSentTimestamp = ((uint64_t) tsLow) | (((uint64_t) tsHigh) << 32);
+	uint64_t now = getTimeMilliseconds();
+	uint64_t roundtrip = now - pingSentTimestamp;
 
 //	std::cout << "Reply from server time=" << roundtrip << "ms" << std::endl;
 	return true;

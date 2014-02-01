@@ -11,10 +11,10 @@
 extern fStr_format_t fStr_formatInfo_ASCII;
 extern fStr_format_t fStr_formatInfo_UTF8;
 
-fStr_t* fStr_alloc(uint32 bufferSize, uint32 format)
+fStr_t* fStr_alloc(uint32_t bufferSize, uint32_t format)
 {
 	fStr_t *fStr = (fStr_t*)malloc(sizeof(fStr_t)+bufferSize);
-	fStr->str = (uint8*)(fStr+1);
+	fStr->str = (uint8_t*)(fStr+1);
 	fStr->allocated = true;
 	fStr->length = 0;
 	fStr->limit = bufferSize;
@@ -33,12 +33,12 @@ fStr_t* fStr_alloc(uint32 bufferSize, uint32 format)
 	return fStr;
 }
 
-fStr_t* fStr_alloc(uint32 bufferSize)
+fStr_t* fStr_alloc(uint32_t bufferSize)
 {
 	return fStr_alloc(bufferSize, FSTR_FORMAT_ASCII);
 }
 
-void _fStr_allocForBuffer(fStr_t* fStr, uint8* buffer, uint32 bufferSize, uint32 format)
+void _fStr_allocForBuffer(fStr_t* fStr, uint8_t* buffer, uint32_t bufferSize, uint32_t format)
 {
 	fStr->str = buffer;
 	fStr->allocated = false;
@@ -63,7 +63,7 @@ void _fStr_allocForBuffer(fStr_t* fStr, uint8* buffer, uint32 bufferSize, uint32
 /*
  * Fast allocate a stack fStr object + an assigned buffer of 128 bytes
  */
-fStr_t* fStr_alloc(fStr_buffer128b_t* fStrBuffer, uint32 format)
+fStr_t* fStr_alloc(fStr_buffer128b_t* fStrBuffer, uint32_t format)
 {
 	_fStr_allocForBuffer(&fStrBuffer->fStrObject, fStrBuffer->bufferData, sizeof(fStrBuffer->bufferData), format);
 	return &fStrBuffer->fStrObject;
@@ -72,7 +72,7 @@ fStr_t* fStr_alloc(fStr_buffer128b_t* fStrBuffer, uint32 format)
 /*
  * Fast allocate a stack fStr object + an assigned buffer of 256 bytes
  */
-fStr_t* fStr_alloc(fStr_buffer256b_t* fStrBuffer, uint32 format)
+fStr_t* fStr_alloc(fStr_buffer256b_t* fStrBuffer, uint32_t format)
 {
 	_fStr_allocForBuffer(&fStrBuffer->fStrObject, fStrBuffer->bufferData, sizeof(fStrBuffer->bufferData), format);
 	return &fStrBuffer->fStrObject;
@@ -81,7 +81,7 @@ fStr_t* fStr_alloc(fStr_buffer256b_t* fStrBuffer, uint32 format)
 /*
  * Fast allocate a stack fStr object + an assigned buffer of 1024 bytes
  */
-fStr_t* fStr_alloc(fStr_buffer1kb_t* fStrBuffer, uint32 format)
+fStr_t* fStr_alloc(fStr_buffer1kb_t* fStrBuffer, uint32_t format)
 {
 	_fStr_allocForBuffer(&fStrBuffer->fStrObject, fStrBuffer->bufferData, sizeof(fStrBuffer->bufferData), format);
 	return &fStrBuffer->fStrObject;
@@ -90,7 +90,7 @@ fStr_t* fStr_alloc(fStr_buffer1kb_t* fStrBuffer, uint32 format)
 /*
  * Fast allocate a stack fStr object + an assigned buffer of 4096 bytes
  */
-fStr_t* fStr_alloc(fStr_buffer4kb_t* fStrBuffer, uint32 format)
+fStr_t* fStr_alloc(fStr_buffer4kb_t* fStrBuffer, uint32_t format)
 {
 	_fStr_allocForBuffer(&fStrBuffer->fStrObject, fStrBuffer->bufferData, sizeof(fStrBuffer->bufferData), format);
 	return &fStrBuffer->fStrObject;
@@ -113,12 +113,12 @@ char* fStr_get(fStr_t* fStr)
 	return (char*)fStr->str;
 }
 
-uint32 fStr_getLimit(fStr_t* fStr)
+uint32_t fStr_getLimit(fStr_t* fStr)
 {
 	return fStr->limit;
 }
 
-void fStr_setLength(fStr_t* fStr, uint32 length)
+void fStr_setLength(fStr_t* fStr, uint32_t length)
 {
 	fStr->length = length;
 }
@@ -267,7 +267,7 @@ int fStr_appendFormatted(fStr_t* fStr, char *format, ...)
 
 				if( *p == 'd' ) //signed integer
 				{
-					o += esprintf_d(o, va_arg(arguments,sint64), PadRight, PadZero, Width);
+					o += esprintf_d(o, va_arg(arguments,int64_t), PadRight, PadZero, Width);
 				}
 				else if( p[0] == 'u' && p[1] == 't' && p[2] == 'f' && p[3] == '8' ) //utf8 string
 				{
@@ -337,7 +337,7 @@ int fStr_appendFormatted(fStr_t* fStr, char *format, ...)
 
 void fstr_ASCII_copyASCII(fStr_t* fStr, char *str)
 {
-	uint32 c = 0;
+	uint32_t c = 0;
 	while( *str )
 	{
 		fStr->str[c] = *str;
@@ -349,7 +349,7 @@ void fstr_ASCII_copyASCII(fStr_t* fStr, char *str)
 
 void fstr_ASCII_appendASCII(fStr_t* fStr, char *source)
 {
-	uint32 c = fStr->length;
+	uint32_t c = fStr->length;
 	while( *source )
 	{
 		fStr->str[c] = *source;
@@ -361,7 +361,7 @@ void fstr_ASCII_appendASCII(fStr_t* fStr, char *source)
 
 void fstr_ASCII_copy(fStr_t* dest, fStr_t* src)
 {
-	for(uint32 c=0; c<src->length; c++)
+	for(uint32_t c=0; c<src->length; c++)
 	{
 		dest->str[c] = src->str[c];
 	}
@@ -370,7 +370,7 @@ void fstr_ASCII_copy(fStr_t* dest, fStr_t* src)
 
 void fstr_ASCII_append(fStr_t* dest, fStr_t* src)
 {
-	for(uint32 c=0; c<src->length; c++)
+	for(uint32_t c=0; c<src->length; c++)
 	{
 		dest->str[c+dest->length] = src->str[c];
 	}
@@ -390,7 +390,7 @@ fStr_format_t fStr_formatInfo_ASCII =
 
 void fstr_UTF8_copyASCII(fStr_t* fStr, char *str)
 {
-	uint32 c = 0;
+	uint32_t c = 0;
 	while( *str )
 	{
 		fStr->str[c] = *str;
@@ -402,7 +402,7 @@ void fstr_UTF8_copyASCII(fStr_t* fStr, char *str)
 
 void fstr_UTF8_appendASCII(fStr_t* fStr, char *source)
 {
-	uint32 c = fStr->length;
+	uint32_t c = fStr->length;
 	while( *source )
 	{
 		fStr->str[c] = *source;
@@ -414,7 +414,7 @@ void fstr_UTF8_appendASCII(fStr_t* fStr, char *source)
 
 void fstr_UTF8_copy(fStr_t* dest, fStr_t* src)
 {
-	for(uint32 c=0; c<src->length; c++)
+	for(uint32_t c=0; c<src->length; c++)
 	{
 		dest->str[c] = src->str[c];
 	}
@@ -423,7 +423,7 @@ void fstr_UTF8_copy(fStr_t* dest, fStr_t* src)
 
 void fstr_UTF8_append(fStr_t* dest, fStr_t* src)
 {
-	for(uint32 c=0; c<src->length; c++)
+	for(uint32_t c=0; c<src->length; c++)
 	{
 		dest->str[c+dest->length] = src->str[c];
 	}
@@ -450,7 +450,7 @@ char* fStrDup(char *src)
 #endif
 }
 
-char* fStrDup(char *src, sint32 length)
+char* fStrDup(char *src, int32_t length)
 {
 	char* ns = (char*)malloc(length+1);
 	memcpy(ns, src, length);
@@ -489,20 +489,20 @@ char** fStrTokenize(char* src, char* tokens)
 	memset(lookup, 0, sizeof(lookup));
 	while( *tokens )
 	{
-		lookup[(uint8)(*tokens)] = true;
+		lookup[(uint8_t)(*tokens)] = true;
 		tokens++;
 	}
 	// tokenize string
 	char** params = (char**)malloc(sizeof(char*) * 64);
 	memset(params, 0, sizeof(char*) * 64);
-	uint32 indexStart = 0;
-	uint32 paramCounter = 0;
-	for(uint32 i=0; i<0x7FFFFFFF; i++)
+	uint32_t indexStart = 0;
+	uint32_t paramCounter = 0;
+	for(uint32_t i=0; i<0x7FFFFFFF; i++)
 	{
 		if( lookup[src[i]] || src[i] == '\0' )
 		{
 			// split param
-			uint32 pLen = i-indexStart;
+			uint32_t pLen = i-indexStart;
 			if( pLen > 0 )
 			{
 				params[paramCounter] = fStrDup(src+indexStart, pLen);
@@ -525,7 +525,7 @@ void fStrTokenizeClean(char** values)
 {
 	if( values == NULL )
 		return;
-	for(uint32 i=0; i<64; i++)
+	for(uint32_t i=0; i<64; i++)
 	{
 		if( values[i] )
 			free(values[i]);
@@ -536,12 +536,12 @@ void fStrTokenizeClean(char** values)
 /*
  * Calculates the fast hash of an ASCII string (Method 1)
  */
-uint32 fStrGenHashA(char* str)
+uint32_t fStrGenHashA(char* str)
 {
-	uint32 h = 0xef4cb8f0;
+	uint32_t h = 0xef4cb8f0;
 	while( *str )
 	{
-		uint32 c = (uint32)*str;
+		uint32_t c = (uint32_t)*str;
 		h ^= c;
 		h = (h<<3) | (h>>29);
 		str++;
@@ -552,13 +552,13 @@ uint32 fStrGenHashA(char* str)
 /*
  * Calculates the fast hash of an ASCII string (Method 2)
  */
-uint32 fStrGenHashB(char* str)
+uint32_t fStrGenHashB(char* str)
 {
-	uint32 h1 = 0x77b192d3;
-	uint32 h2 = 0xab9941bb;
+	uint32_t h1 = 0x77b192d3;
+	uint32_t h2 = 0xab9941bb;
 	while( *str )
 	{
-		uint32 c = (uint32)*str;
+		uint32_t c = (uint32_t)*str;
 		h1 ^= c;
 		h2 += c;
 		h1 = (h1>>3) | (h1<<29);
@@ -576,7 +576,7 @@ void fStrConvertToLowercase(char* str)
 {
 	while( *str )
 	{
-		uint8 c = *str;
+		uint8_t c = *str;
 		if( c >= 'A' && c <= 'Z' )
 		{
 			c -= ('A'-'a');
@@ -590,10 +590,10 @@ void fStrConvertToLowercase(char* str)
 /*
  * Adds an array a lower case hex string (without a preleading '0x')
  */
-void fStr_addHexString(fStr_t* fStr, uint8* data, uint32 dataLength)
+void fStr_addHexString(fStr_t* fStr, uint8_t* data, uint32_t dataLength)
 {
-	uint8* ptr = (fStr->str+fStr->length);
-	for(uint32 i=0; i<dataLength; i++)
+	uint8_t* ptr = (fStr->str+fStr->length);
+	for(uint32_t i=0; i<dataLength; i++)
 	{
 		sprintf((char*)ptr, "%02x", data[i]);
 		ptr += 2;
@@ -607,12 +607,12 @@ void fStr_addHexString(fStr_t* fStr, uint8* data, uint32 dataLength)
  * The string size is expected to be at least length
  * The NT character is ignored
  */
-sint32 fStrCmpCaseInsensitive(uint8* str1, uint8* str2, uint32 length)
+int32_t fStrCmpCaseInsensitive(uint8_t* str1, uint8_t* str2, uint32_t length)
 {
-	for(uint32 i=0; i<length; i++)
+	for(uint32_t i=0; i<length; i++)
 	{
-		uint8 c1 = str1[i];
-		uint8 c2 = str2[i];
+		uint8_t c1 = str1[i];
+		uint8_t c2 = str2[i];
 		// convert both chars to lower case
 		if( c1 >= 'A' && c1 <= 'Z' )
 			c1 -= ('A'-'a');

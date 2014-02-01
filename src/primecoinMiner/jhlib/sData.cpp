@@ -4,15 +4,15 @@ static char sData_whitespaceList[] = {' ','\t'};
 
 char *streamEx_readLine(stream_t *stream)
 {
-	uint32 currentSeek = stream_getSeek(stream);
-	uint32 fileSize = stream_getSize(stream);
-	uint32 maxLen = fileSize - currentSeek;
+	uint32_t currentSeek = stream_getSeek(stream);
+	uint32_t fileSize = stream_getSize(stream);
+	uint32_t maxLen = fileSize - currentSeek;
 	if( maxLen == 0 )
 		return NULL; // eof reached
 	// begin parsing
 	char *cstr = (char*)malloc(512);
-	sint32 size = 0;
-	sint32 limit = 512;
+	int32_t size = 0;
+	int32_t limit = 512;
 	while( maxLen )
 	{
 		maxLen--;
@@ -52,7 +52,7 @@ void _sData_preloadCategory(sData_t *sData)
 	// release data
 	if( sData->optionLine )
 	{
-		for(sint32 i=0; i<sData->optionLineCount; i++)
+		for(size_t i=0; i<sData->optionLineCount; i++)
 		{
 			if( sData->optionLine[i].optionName )
 				free(sData->optionLine[i].optionName);
@@ -64,7 +64,7 @@ void _sData_preloadCategory(sData_t *sData)
 	// count lines
 	stream_setSeek(sData->file, sData->categoryDataOffset);
 	char *line = streamEx_readLine(sData->file);
-	sint32 lineCount = 0;
+	int32_t lineCount = 0;
 	while( line )
 	{
 		// todo: trim left
@@ -118,10 +118,10 @@ void _sData_preloadCategory(sData_t *sData)
 		// data lines must start with a letter
 		if( (*x >= 'a' && *x <= 'z') || (*x >= 'A' && *x <= 'Z') )
 		{
-			sint32 splitIdx = -1;
-			sint32 tLen = strlen(x);
+			int32_t splitIdx = -1;
+			size_t tLen = strlen(x);
 			// find '='
-			for(sint32 i=0; i<tLen; i++)
+			for (size_t i = 0; i<tLen; i++)
 			{
 				if( x[i] == '=' )
 				{
@@ -134,7 +134,7 @@ void _sData_preloadCategory(sData_t *sData)
 				// only name set...
 				// cover with empty data string
 				sData->optionLine[lineCount].optionName = (char*)malloc(tLen+1);
-				for(sint32 p=0; p<tLen; p++)
+				for(size_t p=0; p<tLen; p++)
 					sData->optionLine[lineCount].optionName[p] = x[p];
 				sData->optionLine[lineCount].optionName[tLen] = '\0';
 				sData->optionLine[lineCount].optionData = (char*)malloc(1);
@@ -144,25 +144,25 @@ void _sData_preloadCategory(sData_t *sData)
 			{
 				// name
 				sData->optionLine[lineCount].optionName = (char*)malloc(splitIdx+1);
-				for(sint32 p=0; p<splitIdx; p++)
+				for (size_t p = 0; p<splitIdx; p++)
 					sData->optionLine[lineCount].optionName[p] = x[p];
 				sData->optionLine[lineCount].optionName[splitIdx] = '\0';
 				// skip '='
 				splitIdx++;
 				// data - but skip whitespaces first
-				sint32 whiteSpaceCount = 0;
-				for(sint32 i=0; i<tLen-splitIdx; i++)
+				int32_t whiteSpaceCount = 0;
+				for (size_t i = 0; i<tLen - splitIdx; i++)
 				{
 					if( x[i+splitIdx] != ' ' && x[i+splitIdx] != '\t' )
 						break;
 					whiteSpaceCount++;
 				}
 				sData->optionLine[lineCount].optionData = (char*)malloc(tLen-whiteSpaceCount-splitIdx+1);
-				for(sint32 p=0; p<(tLen-splitIdx-whiteSpaceCount); p++)
+				for (size_t p = 0; p<(tLen - splitIdx - whiteSpaceCount); p++)
 					sData->optionLine[lineCount].optionData[p] = x[p+splitIdx+whiteSpaceCount];
 				sData->optionLine[lineCount].optionData[tLen-splitIdx-whiteSpaceCount] = '\0';
 				// cut whitespaces from the end
-				sint32 trimIdx = (tLen-splitIdx-whiteSpaceCount);
+				int32_t trimIdx = (tLen-splitIdx-whiteSpaceCount);
 				trimIdx--;
 				while( trimIdx >= 0)
 				{
@@ -175,7 +175,7 @@ void _sData_preloadCategory(sData_t *sData)
 				// filter out "..." strings
 				if( sData->optionLine[lineCount].optionData[0] == '\"' )
 				{
-					uint32 end = 1;
+					uint32_t end = 1;
 					while( sData->optionLine[lineCount].optionData[end] )
 					{	
 						if( sData->optionLine[lineCount].optionData[end] == '\"' )
@@ -185,7 +185,7 @@ void _sData_preloadCategory(sData_t *sData)
 						}
 						end++;
 					}
-					for(uint32 p=0; p<end; p++)
+					for(uint32_t p=0; p<end; p++)
 					{
 						sData->optionLine[lineCount].optionData[p] = sData->optionLine[lineCount].optionData[p+1];
 					}
@@ -193,8 +193,8 @@ void _sData_preloadCategory(sData_t *sData)
 				}
 			}
 			// cut whitespaces from the name
-			sint32 nameLen = strlen(sData->optionLine[lineCount].optionName);
-			for(sint32 i=nameLen-1; i>0; i--)
+			size_t nameLen = strlen(sData->optionLine[lineCount].optionName);
+			for (size_t i = nameLen - 1; i>0; i--)
 			{
 				if( sData->optionLine[lineCount].optionName[i] != sData_whitespaceList[0] && sData->optionLine[lineCount].optionName[i] != sData_whitespaceList[1] )
 					break;
@@ -225,10 +225,10 @@ bool sData_nextCategory(sData_t *sData)
 		{
 			// category beginns
 			sData->categoryDataOffset = stream_getSeek(sData->file);
-			sint32 catLen = std::min<sint32>(1024, strlen(line)+1);
+			int32_t catLen = std::min<int32_t>(1024, strlen(line)+1);
 			sData->categoryName = (char*)malloc(catLen);
 			// copy name
-			for(sint32 i=0; i<1023; i++) // 1kb is the name length limit
+			for(int32_t i=0; i<1023; i++) // 1kb is the name length limit
 			{
 				sData->categoryName[i] = line[i+1];
 				if( sData->categoryName[i] == ']' )
@@ -259,14 +259,14 @@ char *sData_currentCategoryName(sData_t *sData)
 
 char *sData_findOption(sData_t *sData, char *optionName)
 {
-	sint32 len = strlen(optionName);
-	for(sint32 i=0; i<sData->optionLineCount; i++)
+	size_t len = strlen(optionName);
+	for (size_t i = 0; i<sData->optionLineCount; i++)
 	{
 		bool fit = true;
-		sint32 oLen = strlen(sData->optionLine[i].optionName);
+		size_t oLen = strlen(sData->optionLine[i].optionName);
 		if( oLen != len )
 			continue;
-		for(sint32 l=0; l<len; l++)
+		for (size_t l = 0; l<len; l++)
 		{
 			char c1 = sData->optionLine[i].optionName[l];
 			char c2 = optionName[l];
@@ -296,7 +296,7 @@ void sData_close(sData_t *sData)
 	}
 	if( sData->optionLine )
 	{
-		for(sint32 i=0; i<sData->optionLineCount; i++)
+		for (size_t i = 0; i<sData->optionLineCount; i++)
 		{
 			if( sData->optionLine[i].optionName )
 				free(sData->optionLine[i].optionName);

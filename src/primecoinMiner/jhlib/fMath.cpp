@@ -590,7 +590,7 @@ bool intersection_rayBox(vector3D_t* orig, vector3D_t* dir, vector3D_t* box_max,
  * intersectionFace is the face that intersects the ray
  * Return values: top(0), bottom(1), left(2), right(3), front(4), back(5)
  */
-bool intersection_rayBox(vector3D_t* orig, vector3D_t* dir, vector3D_t* box_max, vector3D_t* box_min, float* distance, uint8* intersectionFace)
+bool intersection_rayBox(vector3D_t* orig, vector3D_t* dir, vector3D_t* box_max, vector3D_t* box_min, float* distance, uint8_t* intersectionFace)
 {
 	vector3D_t tmin;
 	tmin.x = (box_min->x - orig->x)/dir->x;
@@ -660,11 +660,11 @@ float _fastAbs(float v)
  * Returns the index of the least set bit (0-31)
  * If no bit is set at all, returns 32
  */
-uint32 getLeastBitIndex(uint32 mask)
+uint32_t getLeastBitIndex(uint32_t mask)
 {
 	// binary search using a shifted AND mask
 	// always 5 iterations
-	uint32 cIndex = 16;
+	uint32_t cIndex = 16;
 	if( mask == 0 )
 		return 32; // no bit set
 	// iteration1

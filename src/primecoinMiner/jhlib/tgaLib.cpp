@@ -8,34 +8,34 @@ tgaImage_t* tga_load(char *filePath)
 	// get file as stream
 	stream_t *in = file;
 	// read header
-	uint8 hdr_imageIDLength = stream_readU8(in);
-	uint8 hdr_paletteType = stream_readU8(in);
-	uint8 hdr_imageType = stream_readU8(in);
+	uint8_t hdr_imageIDLength = stream_readU8(in);
+	uint8_t hdr_paletteType = stream_readU8(in);
+	uint8_t hdr_imageType = stream_readU8(in);
 	//1 = indiziert (Farbpalette) unkomprimiert
 	//2 = RGB (24 Bit) unkomprimiert
 	//3 = monochrom unkomprimiert
 	//9 = indiziert (Farbpalette) lauflängenkodiert
 	//10 = RGB (24 Bit) lauflängenkodiert
 	//11 = monochrom lauflängenkodiert
-	uint16 hdr_paletteStart = stream_readU16(in);
-	uint16 hdr_paletteEnd = stream_readU16(in);
-	uint16 hdr_paletteColorDepth = stream_readU8(in);
-	sint16 hdr_centerX = stream_readS16(in);
-	sint16 hdr_centerY = stream_readS16(in);
-	uint16 hdr_width = stream_readU16(in);
-	uint16 hdr_height = stream_readU16(in);
-	uint8 hdr_colorDepth = stream_readU8(in); //gültige Werte sind 1, 8, 15, 16, 24 und 32
-	uint8 hdr_pixelAttributes = stream_readU8(in);
+	uint16_t hdr_paletteStart = stream_readU16(in);
+	uint16_t hdr_paletteEnd = stream_readU16(in);
+	uint16_t hdr_paletteColorDepth = stream_readU8(in);
+	int16_t hdr_centerX = stream_readS16(in);
+	int16_t hdr_centerY = stream_readS16(in);
+	uint16_t hdr_width = stream_readU16(in);
+	uint16_t hdr_height = stream_readU16(in);
+	uint8_t hdr_colorDepth = stream_readU8(in); //gültige Werte sind 1, 8, 15, 16, 24 und 32
+	uint8_t hdr_pixelAttributes = stream_readU8(in);
 	//Bit 4: horizontale Lage des Nullpunkts (0 = links, 1 = rechts)
 	//Bit 5: vertikale Lage des Nullpunkts (0 = unten, 1 = oben)
 	//Bit 6-7: 0
 
 	// imageID
-	uint8 hdr_imageID[255];
+	uint8_t hdr_imageID[255];
 	stream_readData(in, hdr_imageID, hdr_imageIDLength);
-	uint8 *pixelData = (uint8*)malloc(hdr_width*hdr_height*4);
-	uint32 pixelBytesPerRow = hdr_width*4;
-	//uint32 pixelDataSize = 0;
+	uint8_t *pixelData = (uint8_t*)malloc(hdr_width*hdr_height*4);
+	uint32_t pixelBytesPerRow = hdr_width*4;
+	//uint32_t pixelDataSize = 0;
 	// palette data (optional)
 	// todo
 	// allocate and setup tga image instance
@@ -52,8 +52,8 @@ tgaImage_t* tga_load(char *filePath)
 		{
 			// RGBA
 			// read rows in reversed order
-			sint32 sizePerRow = hdr_width*4;
-			for(sint32 r=0; r<hdr_height; r++)
+			int32_t sizePerRow = hdr_width*4;
+			for(int32_t r=0; r<hdr_height; r++)
 			{
 				stream_readData(in, pixelData+(hdr_height-r-1)*sizePerRow, sizePerRow);
 			}
@@ -107,11 +107,11 @@ bool tga_save(char *filePath, tgaImage_t* tgaImage)
 	////Bit 6-7: 0
 
 	//// imageID
-	//uint8 hdr_imageID[255];
+	//uint8_t hdr_imageID[255];
 	//stream_readData(in, hdr_imageID, hdr_imageIDLength);
-	//uint8 *pixelData = (uint8*)malloc(hdr_width*hdr_height*4);
-	//uint32 pixelBytesPerRow = hdr_width*4;
-	////uint32 pixelDataSize = 0;
+	//uint8_t *pixelData = (uint8_t*)malloc(hdr_width*hdr_height*4);
+	//uint32_t pixelBytesPerRow = hdr_width*4;
+	////uint32_t pixelDataSize = 0;
 	//// palette data (optional)
 	//// todo
 	//// allocate and setup tga image instance

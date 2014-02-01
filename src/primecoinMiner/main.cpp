@@ -1,15 +1,17 @@
 #include"global.h"
-#include "ticker.h"
 #include<ctime>
 #include<map>
 
 #ifdef _WIN32
 #include<intrin.h>
 #include<conio.h>
-#endif
-
+#include<stdio.h>
+#include<iostream>
+#include<string>
+#else
 #include <termios.h>    //termios, TCSANOW, ECHO, ICANON
 #include <unistd.h>     //STDIN_FILENO
+#endif
 
 //used for get_num_cpu
 #if defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__)
@@ -27,22 +29,22 @@ unsigned long nOverrideTargetValue;
 unsigned int nOverrideBTTargetValue;
 char* dt;
 bool useGetBlockTemplate = true;
-uint8 decodedWalletAddress[32];
-int decodedWalletAddressLen;
+uint8_t decodedWalletAddress[32];
+size_t decodedWalletAddressLen;
 
 typedef struct  
 {
    bool isValidData;
    // block data
-   uint32 version;
-   uint32 height;
-   uint32 nTime;
-   uint32 nBits;
-   uint8 previousBlockHash[32];
-   uint8 target[32]; // sha256 & scrypt
+   uint32_t version;
+   uint32_t height;
+   uint32_t nTime;
+   uint32_t nBits;
+   uint8_t previousBlockHash[32];
+   uint8_t target[32]; // sha256 & scrypt
    // coinbase aux
-   uint8 coinbaseauxFlags[128];
-   uint32 coinbaseauxFlagsLength; // in bytes
+   uint8_t coinbaseauxFlags[128];
+   uint32_t coinbaseauxFlagsLength; // in bytes
    // todo: mempool transactions
 }getBlockTemplateData_t;
 
@@ -53,19 +55,19 @@ typedef struct
    char* workername;
    char* workerpass;
    char* host;
-   sint32 port;
+   int32_t port;
    bool useXPT;
-   sint32 numThreads;
-   sint32 sieveSize;
-   sint32 sievePercentage;
-   sint32 roundSievePercentage;
-   sint32 sievePrimeLimit;	// how many primes should be sieved
+   int32_t numThreads;
+   int32_t sieveSize;
+   int32_t sievePercentage;
+   int32_t roundSievePercentage;
+   int32_t sievePrimeLimit;	// how many primes should be sieved
    unsigned int L1CacheElements;
    unsigned int primorialMultiplier;
    bool enableCacheTunning;
-   sint32 targetOverride;
-   sint32 targetBTOverride;
-   sint32 sieveExtensions;
+   int32_t targetOverride;
+   int32_t targetBTOverride;
+   int32_t sieveExtensions;
    bool printDebug;
    // getblocktemplate stuff
    char* xpmAddress; // we will use this XPM address for block payout
@@ -116,12 +118,12 @@ bool hex2bin(unsigned char *p, const char *hexstr, size_t len)
 
 
 
-uint32 _swapEndianessU32(uint32 v)
+uint32_t _swapEndianessU32(uint32_t v)
 {
 	return ((v>>24)&0xFF)|((v>>8)&0xFF00)|((v<<8)&0xFF0000)|((v<<24)&0xFF000000);
 }
 
-uint32 _getHexDigitValue(uint8 c)
+uint32_t _getHexDigitValue(uint8_t c)
 {
 	if( c >= '0' && c <= '9' )
 		return c-'0';
@@ -135,7 +137,7 @@ uint32 _getHexDigitValue(uint8 c)
 
 static const char* pszBase58 = "123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz";
 
-inline bool DecodeBase58(const char* psz, uint8* vchRet, int* retLength)
+inline bool DecodeBase58(const char* psz, uint8_t* vchRet, size_t* retLength)
 {
    CAutoBN_CTX pctx;
    CBigNum bn58 = 58;
@@ -173,8 +175,8 @@ inline bool DecodeBase58(const char* psz, uint8* vchRet, int* retLength)
    for (const char* p = psz; *p == pszBase58[0]; p++)
       nLeadingZeros++;
    // Convert little endian data to big endian
-   int rLen = nLeadingZeros + vchTmp.size();
-   for(int i=0; i<rLen; i++)
+   size_t rLen = nLeadingZeros + vchTmp.size();
+   for(size_t i=0; i<rLen; i++)
    {
       vchRet[rLen-i-1] = vchTmp[i];
    }
@@ -186,17 +188,17 @@ inline bool DecodeBase58(const char* psz, uint8* vchRet, int* retLength)
 * Parses a hex string
 * Length should be a multiple of 2
 */
-void jhMiner_parseHexString(char* hexString, uint32 length, uint8* output)
+void jhMiner_parseHexString(char* hexString, uint32_t length, uint8_t* output)
 {
-   uint32 lengthBytes = length / 2;
-   for(uint32 i=0; i<lengthBytes; i++)
+	uint32_t lengthBytes = length / 2;
+	for (uint32_t i = 0; i<lengthBytes; i++)
    {
       // high digit
-      uint32 d1 = _getHexDigitValue(hexString[i*2+0]);
+		uint32_t d1 = _getHexDigitValue(hexString[i * 2 + 0]);
       // low digit
-      uint32 d2 = _getHexDigitValue(hexString[i*2+1]);
+		uint32_t d2 = _getHexDigitValue(hexString[i * 2 + 1]);
       // build byte
-      output[i] = (uint8)((d1<<4)|(d2));	
+		output[i] = (uint8_t)((d1 << 4) | (d2));
    }
 }
 
@@ -204,51 +206,51 @@ void jhMiner_parseHexString(char* hexString, uint32 length, uint8* output)
 * Parses a hex string and converts it to LittleEndian (or just opposite endianness)
 * Length should be a multiple of 2
 */
-void jhMiner_parseHexStringLE(char* hexString, uint32 length, uint8* output)
+void jhMiner_parseHexStringLE(char* hexString, uint32_t length, uint8_t* output)
 {
-   uint32 lengthBytes = length / 2;
-   for(uint32 i=0; i<lengthBytes; i++)
+	uint32_t lengthBytes = length / 2;
+	for (uint32_t i = 0; i<lengthBytes; i++)
    {
       // high digit
-      uint32 d1 = _getHexDigitValue(hexString[i*2+0]);
+		uint32_t d1 = _getHexDigitValue(hexString[i * 2 + 0]);
       // low digit
-      uint32 d2 = _getHexDigitValue(hexString[i*2+1]);
+		uint32_t d2 = _getHexDigitValue(hexString[i * 2 + 1]);
       // build byte
-      output[lengthBytes-i-1] = (uint8)((d1<<4)|(d2));	
+		output[lengthBytes - i - 1] = (uint8_t)((d1 << 4) | (d2));
    }
 }
 
 
-void primecoinBlock_generateHeaderHash(primecoinBlock_t* primecoinBlock, uint8 hashOutput[32])
+void primecoinBlock_generateHeaderHash(primecoinBlock_t* primecoinBlock, uint8_t hashOutput[32])
 {
-   uint8 blockHashDataInput[512];
+	uint8_t blockHashDataInput[512];
    memcpy(blockHashDataInput, primecoinBlock, 80);
    sha256_context ctx;
    sha256_starts(&ctx);
-   sha256_update(&ctx, (uint8*)blockHashDataInput, 80);
+   sha256_update(&ctx, (uint8_t*)blockHashDataInput, 80);
    sha256_finish(&ctx, hashOutput);
    sha256_starts(&ctx); // is this line needed?
    sha256_update(&ctx, hashOutput, 32);
    sha256_finish(&ctx, hashOutput);
 }
 
-void primecoinBlock_generateBlockHash(primecoinBlock_t* primecoinBlock, uint8 hashOutput[32])
+void primecoinBlock_generateBlockHash(primecoinBlock_t* primecoinBlock, uint8_t hashOutput[32])
 {
-   uint8 blockHashDataInput[512];
+	uint8_t blockHashDataInput[512];
    memcpy(blockHashDataInput, primecoinBlock, 80);
-   uint32 writeIndex = 80;
-   sint32 lengthBN = 0;
+   size_t writeIndex = 80;
+   size_t lengthBN = 0;
    CBigNum bnPrimeChainMultiplier;
    bnPrimeChainMultiplier.SetHex(primecoinBlock->mpzPrimeChainMultiplier.get_str(16));
    std::vector<unsigned char> bnSerializeData = bnPrimeChainMultiplier.getvch();
    lengthBN = bnSerializeData.size();
-   *(uint8*)(blockHashDataInput+writeIndex) = (uint8)lengthBN;
+   *(uint8_t*)(blockHashDataInput + writeIndex) = (uint8_t)lengthBN;
    writeIndex += 1;
    memcpy(blockHashDataInput+writeIndex, &bnSerializeData[0], lengthBN);
    writeIndex += lengthBN;
    sha256_context ctx;
    sha256_starts(&ctx);
-   sha256_update(&ctx, (uint8*)blockHashDataInput, writeIndex);
+   sha256_update(&ctx, (uint8_t*)blockHashDataInput, writeIndex);
    sha256_finish(&ctx, hashOutput);
    sha256_starts(&ctx); // is this line needed?
    sha256_update(&ctx, hashOutput, 32);
@@ -258,9 +260,9 @@ void primecoinBlock_generateBlockHash(primecoinBlock_t* primecoinBlock, uint8 ha
 typedef struct  
 {
    bool dataIsValid;
-   uint8 data[128];
-   uint32 dataHash; // used to detect work data changes
-   uint8 serverData[32]; // contains data from the server
+   uint8_t data[128];
+   uint32_t dataHash; // used to detect work data changes
+   uint8_t serverData[32]; // contains data from the server
 }workDataEntry_t;
 
 typedef struct  
@@ -270,7 +272,7 @@ typedef struct
 #else
   pthread_mutex_t cs;
 #endif
-	uint8 protocolMode;
+  uint8_t protocolMode;
 	// xpm
 	workDataEntry_t workEntry[128]; // work data for each thread (up to 128)
 	// x.pushthrough
@@ -298,7 +300,7 @@ bool useLocalPrimecoindForLongpoll;
 * Note that the primecoin data can be larger due to the multiplier at the end, so we use 512 bytes per default
 * 29.sep: switched to 512 bytes per block as default, since Primecoin can use up to 2000 bits (250 bytes) for the multiplier chain + length prefix of 2 bytes
 */
-bool jhMiner_pushShare_primecoin(uint8 data[512], primecoinBlock_t* primecoinBlock)
+bool jhMiner_pushShare_primecoin(uint8_t data[512], primecoinBlock_t* primecoinBlock)
 {
    if( workData.protocolMode == MINER_PROTOCOL_GETWORK )
    {
@@ -308,10 +310,10 @@ bool jhMiner_pushShare_primecoin(uint8 data[512], primecoinBlock_t* primecoinBlo
       fStr_append(fStr_parameter, "[\"");
       fStr_addHexString(fStr_parameter, data, 512);
       fStr_appendFormatted(fStr_parameter, "\",\"");
-      fStr_addHexString(fStr_parameter, (uint8*)&primecoinBlock->serverData, 32);
+	  fStr_addHexString(fStr_parameter, (uint8_t*)&primecoinBlock->serverData, 32);
       fStr_append(fStr_parameter, "\"]");
       // send request
-      sint32 rpcErrorCode = 0;
+	  int32_t rpcErrorCode = 0;
       jsonObject_t* jsonReturnValue = jsonClient_request(&jsonRequestTarget, "getwork", fStr_parameter, &rpcErrorCode);
       if( jsonReturnValue == NULL )
       {
@@ -354,21 +356,21 @@ bool jhMiner_pushShare_primecoin(uint8 data[512], primecoinBlock_t* primecoinBlo
       CBigNum bnPrimeChainMultiplier;
       bnPrimeChainMultiplier.SetHex(primecoinBlock->mpzPrimeChainMultiplier.get_str(16));
       std::vector<unsigned char> bnSerializeData = bnPrimeChainMultiplier.getvch();
-      sint32 lengthBN = bnSerializeData.size();
+      size_t lengthBN = bnSerializeData.size();
       //memcpy(xptShareToSubmit->chainMultiplier, &bnSerializeData[0], lengthBN);
       //xptShareToSubmit->chainMultiplierSize = lengthBN;
       // prepare raw data of block
-      uint8 dataRaw[512] = {0};
-      uint8 proofOfWorkHash[32];
+	  uint8_t dataRaw[512] = { 0 };
+      //uint8_t proofOfWorkHash[32];
       bool shareAccepted = false;
       memset(dataRaw, 0x00, sizeof(dataRaw));
-      *(uint32*)(dataRaw+0) = primecoinBlock->version;
+	  *(uint32_t*)(dataRaw + 0) = primecoinBlock->version;
       memcpy((dataRaw+4), primecoinBlock->prevBlockHash, 32);
       memcpy((dataRaw+36), primecoinBlock->merkleRoot, 32);
-      *(uint32*)(dataRaw+68) = primecoinBlock->timestamp;
-      *(uint32*)(dataRaw+72) = primecoinBlock->nBits;
-      *(uint32*)(dataRaw+76) = primecoinBlock->nonce;
-      *(uint8*)(dataRaw+80) = lengthBN;
+	  *(uint32_t*)(dataRaw + 68) = primecoinBlock->timestamp;
+	  *(uint32_t*)(dataRaw + 72) = primecoinBlock->nBits;
+	  *(uint32_t*)(dataRaw + 76) = primecoinBlock->nonce;
+	  *(uint8_t*)(dataRaw + 80) = (uint8_t)lengthBN;
       if( lengthBN > 0x7F )
          printf("Warning: chainMultiplierSize exceeds 0x7F in jhMiner_pushShare_primecoin()\n");
       memcpy(dataRaw+81, &bnSerializeData[0], lengthBN);
@@ -382,8 +384,8 @@ bool jhMiner_pushShare_primecoin(uint8 data[512], primecoinBlock_t* primecoinBlo
       bitclient_addVarIntFromStream(blockStream, 1);
       bitclient_writeTransactionToStream(blockStream, txCoinbase);
       // map buffer
-      sint32 blockDataLength = 0;
-      uint8* blockData = (uint8*)streamEx_map(blockStream, &blockDataLength);
+	  int32_t blockDataLength = 0;
+	  uint8_t* blockData = (uint8_t*)streamEx_map(blockStream, &blockDataLength);
       // clean up
       bitclient_destroyTransaction(txCoinbase);
       // prepare buffer to send
@@ -393,7 +395,7 @@ bool jhMiner_pushShare_primecoin(uint8 data[512], primecoinBlock_t* primecoinBlo
       fStr_addHexString(fStr_parameter, blockData, blockDataLength);
       fStr_append(fStr_parameter, "\"]");
       // send request
-      sint32 rpcErrorCode = 0;
+	  int32_t rpcErrorCode = 0;
       jsonObject_t* jsonReturnValue = NULL;
       jsonReturnValue = jsonClient_request(&jsonRequestTarget, methodName, fStr_parameter, &rpcErrorCode);		
       // clean up rest
@@ -425,8 +427,7 @@ bool jhMiner_pushShare_primecoin(uint8 data[512], primecoinBlock_t* primecoinBlo
       }
 
    }
-   else if( workData.protocolMode == MINER_PROTOCOL_XPUSHTHROUGH )
-{
+   else if( workData.protocolMode == MINER_PROTOCOL_XPUSHTHROUGH ) {
 	// printf("Queue share\n");
 		xptShareToSubmit_t* xptShareToSubmit = (xptShareToSubmit_t*)malloc(sizeof(xptShareToSubmit_t));
 		memset(xptShareToSubmit, 0x00, sizeof(xptShareToSubmit_t));
@@ -440,22 +441,26 @@ bool jhMiner_pushShare_primecoin(uint8 data[512], primecoinBlock_t* primecoinBlo
 		CBigNum bnPrimeChainMultiplier;
 		bnPrimeChainMultiplier.SetHex(primecoinBlock->mpzPrimeChainMultiplier.get_str(16));
 		std::vector<unsigned char> bnSerializeData = bnPrimeChainMultiplier.getvch();
-		sint32 lengthBN = bnSerializeData.size();
+		size_t lengthBN = bnSerializeData.size();
 		memcpy(xptShareToSubmit->chainMultiplier, &bnSerializeData[0], lengthBN);
-		xptShareToSubmit->chainMultiplierSize = lengthBN;
+		xptShareToSubmit->chainMultiplierSize = (unsigned char)lengthBN;
 		// todo: Set stuff like sieve size
-		if( workData.xptClient && !workData.xptClient->disconnected)
+		if (workData.xptClient && !workData.xptClient->disconnected) 
+		{
 			xptClient_foundShare(workData.xptClient, xptShareToSubmit);
+			return true;
+		} 
 		else
 		{
 			std::cout << "Share submission failed. The client is not connected to the pool." << std::endl;
 		}
    }
+   return false;
 }
 
 int queryLocalPrimecoindBlockCount(bool useLocal)
 {
-   sint32 rpcErrorCode = 0;
+	int32_t rpcErrorCode = 0;
    jsonObject_t* jsonReturnValue = jsonClient_request(&jsonRequestTarget, "getblockcount", NULL, &rpcErrorCode);
    if( jsonReturnValue == NULL )
    {
@@ -572,7 +577,7 @@ sysctl(mib, 2, &numcpu, &len, NULL, 0);
 */
 void jhMiner_queryWork_primecoin_getblocktemplate()
 {
-   sint32 rpcErrorCode = 0;
+	int32_t rpcErrorCode = 0;
    fStr_buffer4kb_t fStrBuffer_parameter;
    fStr_t* fStr_parameter = fStr_alloc(&fStrBuffer_parameter, FSTR_FORMAT_UTF8);
    fStr_append(fStr_parameter, "[{\"capabilities\": [\"coinbasetxn\", \"workid\", \"coinbase/append\"]}]");
@@ -580,7 +585,7 @@ void jhMiner_queryWork_primecoin_getblocktemplate()
    jsonReturnValue = jsonClient_request(&jsonRequestTarget, "getblocktemplate", fStr_parameter, &rpcErrorCode);
    if( jsonReturnValue == NULL )
    {
-      printf("UpdateWork(GetBlockTemplate) failed.\n");
+      printf("UpdateWork(GetBlockTemplate) failed. Error code %d\n", rpcErrorCode);
       getBlockTemplateData.isValidData = false;
       return;
    }
@@ -606,36 +611,36 @@ void jhMiner_queryWork_primecoin_getblocktemplate()
          jsonObject_freeObject(jsonReturnValue);
       }
       // prepare field lengths
-      uint32 stringLength_previousblockhash = 0;
-      uint32 stringLength_target = 0;
-      uint32 stringLength_bits = 0;
-      uint32 stringLength_height = 0;
+	  uint32_t stringLength_previousblockhash = 0;
+	  uint32_t stringLength_target = 0;
+	  uint32_t stringLength_bits = 0;
+	  uint32_t stringLength_height = 0;
       // get version
-      uint32 gbtVersion = jsonObject_getNumberValueAsS32(jsonResult_version);
+	  uint32_t gbtVersion = jsonObject_getNumberValueAsS32(jsonResult_version);
       // get previous block hash
-      uint8* stringData_previousBlockHash = jsonObject_getStringData(jsonResult_previousblockhash, &stringLength_previousblockhash);
+	  uint8_t* stringData_previousBlockHash = jsonObject_getStringData(jsonResult_previousblockhash, &stringLength_previousblockhash);
       memset(getBlockTemplateData.previousBlockHash, 0, 32);
       jhMiner_parseHexStringLE((char*)stringData_previousBlockHash, stringLength_previousblockhash, getBlockTemplateData.previousBlockHash);
       // get target hash (optional)
-      uint8* stringData_target = jsonObject_getStringData(jsonResult_target, &stringLength_target);
+	  uint8_t* stringData_target = jsonObject_getStringData(jsonResult_target, &stringLength_target);
       ///(getBlockTemplateData.target, 32);
       memset(getBlockTemplateData.target, 0x00, 32);
       if( stringData_target )
          jhMiner_parseHexStringLE((char*)stringData_target, stringLength_target, getBlockTemplateData.target);
       // get timestamp (mintime)
-      uint32 gbtTime = jsonObject_getNumberValueAsU32(jsonResult_curtime);
+	  uint32_t gbtTime = jsonObject_getNumberValueAsU32(jsonResult_curtime);
       // get bits
       char bitsTmpText[32]; // temporary buffer so we can add NT
-      uint8* stringData_bits = jsonObject_getStringData(jsonResult_bits, &stringLength_bits);
+	  uint8_t* stringData_bits = jsonObject_getStringData(jsonResult_bits, &stringLength_bits);
       memcpy(bitsTmpText, stringData_bits, stringLength_bits);
       bitsTmpText[stringLength_bits] = '\0'; 
-      uint32 gbtBits = 0;
+	  uint32_t gbtBits = 0;
       sscanf((const char*)bitsTmpText, "%x", &gbtBits);
       // get height
-      uint32 gbtHeight = jsonObject_getNumberValueAsS32(jsonResult_height);
+	  uint32_t gbtHeight = jsonObject_getNumberValueAsS32(jsonResult_height);
       // get coinbase aux flags
-      uint32 stringLength_coinbaseauxFlags = 0;
-      uint8* stringData_coinbaseauxFlags = jsonObject_getStringData(jsonResult_coinbaseaux_flags, &stringLength_coinbaseauxFlags);
+	  uint32_t stringLength_coinbaseauxFlags = 0;
+	  uint8_t* stringData_coinbaseauxFlags = jsonObject_getStringData(jsonResult_coinbaseaux_flags, &stringLength_coinbaseauxFlags);
       jhMiner_parseHexString((char*)stringData_coinbaseauxFlags, stringLength_coinbaseauxFlags, getBlockTemplateData.coinbaseauxFlags);
       getBlockTemplateData.coinbaseauxFlagsLength = stringLength_coinbaseauxFlags/2;
       // set remaining number parameters
@@ -651,10 +656,10 @@ void jhMiner_queryWork_primecoin_getblocktemplate()
 
 void jhMiner_queryWork_primecoin_getwork()
 {
-   sint32 rpcErrorCode = 0;
-   uint32 time1 = getTimeMilliseconds();
+	int32_t rpcErrorCode = 0;
+   uint64_t time1 = getTimeMilliseconds();
    jsonObject_t* jsonReturnValue = jsonClient_request(&jsonRequestTarget, "getwork", NULL, &rpcErrorCode);
-   uint32 time2 = getTimeMilliseconds() - time1;
+   uint64_t time2 = getTimeMilliseconds() - time1;
    // printf("request time: %dms\n", time2);
    if( jsonReturnValue == NULL )
    {
@@ -678,10 +683,10 @@ void jhMiner_queryWork_primecoin_getwork()
          return;
       }
       // data
-      uint32 stringData_length = 0;
-      uint8* stringData_data = jsonObject_getStringData(jsonResult_data, &stringData_length);
+	  uint32_t stringData_length = 0;
+	  uint8_t* stringData_data = jsonObject_getStringData(jsonResult_data, &stringData_length);
       //JLR DBG
-      printf("data: %.*s...\n", (sint32)std::min(48, (int)stringData_length), stringData_data);
+	  printf("data: %.*s...\n", (int32_t)std::min(48, (int)stringData_length), stringData_data);
 
 #ifdef _WIN32
       EnterCriticalSection(&workData.cs);
@@ -707,18 +712,18 @@ void jhMiner_queryWork_primecoin_getwork()
       else
       {
          // get server data
-         uint32 stringServerData_length = 0;
-         uint8* stringServerData_data = jsonObject_getStringData(jsonResult_serverData, &stringServerData_length);
+		  uint32_t stringServerData_length = 0;
+		  uint8_t* stringServerData_data = jsonObject_getStringData(jsonResult_serverData, &stringServerData_length);
          memset(workData.workEntry[0].serverData, 0, 32);
          if( jsonResult_serverData )
             jhMiner_parseHexString((char*)stringServerData_data, std::min(128*2, 32*2), workData.workEntry[0].serverData);
       }
       // generate work hash
-      uint32 workDataHash = 0x5B7C8AF4;
-      for(uint32 i=0; i<stringData_length/2; i++)
+	  uint32_t workDataHash = 0x5B7C8AF4;
+	  for (uint32_t i = 0; i<stringData_length / 2; i++)
       {
          workDataHash = (workDataHash>>29)|(workDataHash<<3);
-         workDataHash += (uint32)workData.workEntry[0].data[i];
+		 workDataHash += (uint32_t)workData.workEntry[0].data[i];
       }
       workData.workEntry[0].dataHash = workDataHash;
 #ifdef _WIN32
@@ -752,7 +757,7 @@ bool SubmitBlock(primecoinBlock_t* pcBlock)
       return false;
    }
 
-   block.primeMultiplier[0] = primemultiplier.size();
+   block.primeMultiplier[0] = (unsigned char)primemultiplier.size();
 
    for (size_t i = 0; i < primemultiplier.size(); ++i) 
       block.primeMultiplier[1 + i] = primemultiplier[i];
@@ -771,7 +776,8 @@ bool SubmitBlock(primecoinBlock_t* pcBlock)
    fStr_append(fStr_parameter, "\"]");
 
    // send request
-   sint32 rpcErrorCode = 0;
+   int32_t rpcErrorCode = 0;
+   //jhMiner_pushShare_primecoin((unsigned char *)data_hex.c_str(), pcBlock);
    //jsonObject_t* jsonReturnValue = jsonClient_request(&jsonRequestTarget, "submitblock", fStr_parameter, &rpcErrorCode);
    jsonObject_t* jsonReturnValue = jsonClient_request(&jsonRequestTarget, "getwork", fStr_parameter, &rpcErrorCode);
    if( jsonReturnValue == NULL )
@@ -808,7 +814,7 @@ bool SubmitBlock(primecoinBlock_t* pcBlock)
 /*
 * Returns the block height of the most recently received workload
 */
-uint32 jhMiner_getCurrentWorkBlockHeight(sint32 threadIndex)
+uint32_t jhMiner_getCurrentWorkBlockHeight(int32_t threadIndex)
 {
    if( workData.protocolMode == MINER_PROTOCOL_GETWORK )
       return ((serverData_t*)workData.workEntry[0].serverData)->blockHeight;	
@@ -832,10 +838,10 @@ uint32_t threadIndex = static_cast<uint32_t>((uintptr_t)arg);
 	CSieveOfEratosthenes* psieve = NULL;
    while( true )
    {
-      uint8 localBlockData[128];
+	   uint8_t localBlockData[128];
       // copy block data from global workData
-      uint32 workDataHash = 0;
-      uint8 serverData[32];
+	   uint32_t workDataHash = 0;
+	   uint8_t serverData[32];
 //JLR DEBUG
 //printf ("jhMiner_workerThread_getwork() TOP!\n");
       while( workData.workEntry[0].dataIsValid == false ) Sleep(200);
@@ -853,9 +859,9 @@ uint32_t threadIndex = static_cast<uint32_t>((uintptr_t)arg);
     pthread_mutex_unlock(&workData.cs);
 #endif
       // swap endianess
-      for(uint32 i=0; i<128/4; i++)
+	for (uint32_t i = 0; i<128 / 4; i++)
       {
-         *(uint32*)(localBlockData+i*4) = _swapEndianessU32(*(uint32*)(localBlockData+i*4));
+		*(uint32_t*)(localBlockData + i * 4) = _swapEndianessU32(*(uint32_t*)(localBlockData + i * 4));
       }
       // convert raw data into primecoin block
       primecoinBlock_t primecoinBlock = {0};
@@ -883,20 +889,20 @@ uint32_t threadIndex = static_cast<uint32_t>((uintptr_t)arg);
    return 0;
 }
 
-static const sint64 PRIMECOIN_COIN = 100000000;
-static const sint64 PRIMECOIN_CENT = 1000000;
+static const int64_t PRIMECOIN_COIN = 100000000;
+static const int64_t PRIMECOIN_CENT = 1000000;
 static const unsigned int PRIMECOIN_nFractionalBits = 24;
 
 /*
 * Returns value of block
 */
-uint64 jhMiner_primeCoin_targetGetMint(unsigned int nBits)
+uint64_t jhMiner_primeCoin_targetGetMint(unsigned int nBits)
 {
    if( nBits == 0 )
       return 0;
-   uint64 nMint = 0;
-   static uint64 nMintLimit = 999ull * PRIMECOIN_COIN;
-   uint64 bnMint = nMintLimit;
+   uint64_t nMint = 0;
+   static uint64_t nMintLimit = 999ull * PRIMECOIN_COIN;
+   uint64_t bnMint = nMintLimit;
    bnMint = (bnMint << PRIMECOIN_nFractionalBits) / nBits;
    bnMint = (bnMint << PRIMECOIN_nFractionalBits) / nBits;
    bnMint = (bnMint / PRIMECOIN_CENT) * PRIMECOIN_CENT;  // mint value rounded to cent
@@ -918,11 +924,11 @@ uint32_t threadIndex = static_cast<uint32_t>((uintptr_t)arg);
    {
 // JLR
 //printf("jhMiner_workerThread_gbt() TOP\n");
-      //uint8 localBlockData[128];
+      //uint8_t localBlockData[128];
       primecoinBlock_t primecoinBlock = {0};
       // copy block data from global workData
-      //uint32 workDataHash = 0;
-      //uint8 serverData[32];
+      //uint32_t workDataHash = 0;
+      //uint8_t serverData[32];
       while( getBlockTemplateData.isValidData == false ) Sleep(200);
 #ifdef _WIN32
       EnterCriticalSection(&workData.cs);
@@ -944,10 +950,10 @@ uint32_t threadIndex = static_cast<uint32_t>((uintptr_t)arg);
       bitclientTransaction_t* txCoinbase = bitclient_createCoinbaseTransactionFromSeed(primecoinBlock.seed, threadIndex, getBlockTemplateData.height, decodedWalletAddress+1, jhMiner_primeCoin_targetGetMint(primecoinBlock.nBits));
       bitclientTransaction_t* txList[64];
       txList[0] = txCoinbase;
-      uint32 numberOfTx = 1;
+	  uint32_t numberOfTx = 1;
       // generate tx hashes (currently we only support coinbase transaction)
-      uint8 txHashList[64*32];
-      for(uint32 t=0; t<numberOfTx; t++)
+	  uint8_t txHashList[64 * 32];
+	  for (uint32_t t = 0; t<numberOfTx; t++)
          bitclient_generateTxHash(txList[t], (txHashList+t*32));
       bitclient_calculateMerkleRoot(txHashList, numberOfTx, primecoinBlock.merkleRoot);
       bitclient_destroyTransaction(txCoinbase);
@@ -987,10 +993,10 @@ uint32_t threadIndex = static_cast<uint32_t>((uintptr_t)arg);
    CSieveOfEratosthenes* psieve = NULL;
    while( true )
    {
-      uint8 localBlockData[128];
+	   uint8_t localBlockData[128];
       // copy block data from global workData
-      uint32 workDataHash = 0;
-      uint8 serverData[32];
+	   uint32_t workDataHash = 0;
+	   uint8_t serverData[32];
 //JLR
 //printf("jhMiner_workerThread_xpt() TOP\n");
       while( workData.workEntry[threadIndex].dataIsValid == false ) Sleep(50);
@@ -1018,7 +1024,7 @@ uint32_t threadIndex = static_cast<uint32_t>((uintptr_t)arg);
       memcpy(&primecoinBlock.serverData, serverData, 32);
       // start mining
       //JLR DBG
-      uint32 time1 = getTimeMilliseconds();
+      uint64_t time1 = getTimeMilliseconds();
       if (!BitcoinMiner(&primecoinBlock, psieve, threadIndex, commandlineInput.numThreads))
       {
 //JLR
@@ -1078,7 +1084,7 @@ puts("Press any key to continue...");
 void jhMiner_parseCommandline(int argc, char **argv)
 {
 	using namespace std;
-	sint32 cIdx = 1;
+	int32_t cIdx = 1;
 	while( cIdx < argc )
 	{
 		char* argument = argv[cIdx];
@@ -1442,7 +1448,7 @@ static void CacheAutoTuningWorkerThread(bool bEnabled)
       }			
       printf("Auto Tuning in progress: %u %%\n", ((primeStats.nL1CacheElements  - nL1CacheElementsStart)*100) / (nL1CacheElementsMax - nL1CacheElementsStart));
 
-      float ratio = primeStats.nWaveTime == 0 ? 0 : ((float)primeStats.nWaveTime / (float)(primeStats.nWaveTime + primeStats.nTestTime)) * 100.0;
+      float ratio = (float)(primeStats.nWaveTime == 0 ? 0 : ((float)primeStats.nWaveTime / (float)(primeStats.nWaveTime + primeStats.nTestTime)) * 100.0);
       printf("WaveTime %u - Wave Round %u - L1CacheSize %u - TotalWaveTime: %u - TotalTestTime: %u - Ratio: %.01f / %.01f %%\n", 
          primeStats.nWaveRound == 0 ? 0 : primeStats.nWaveTime / primeStats.nWaveRound, primeStats.nWaveRound, nL1CacheElements,
          primeStats.nWaveTime, primeStats.nTestTime, ratio, 100.0 - ratio);
@@ -1482,12 +1488,12 @@ static void RoundSieveAutoTuningWorkerThread(bool bEnabled)
          if (bOptimalL1SearchInProgress || !bEnablenPrimorialMultiplierTuning || !IsXptClientConnected())
             continue;
 
-         float ratio = primeStats.nWaveTime == 0 ? 0 : ((float)primeStats.nWaveTime / (float)(primeStats.nWaveTime + primeStats.nTestTime)) * 100.0;
+         float ratio = (float)(primeStats.nWaveTime == 0 ? 0 : ((float)primeStats.nWaveTime / (float)(primeStats.nWaveTime + primeStats.nTestTime)) * 100.0);
          //JLR DBG
          printf("\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\n");
          printf("WaveTime %u - Wave Round %u - L1CacheSize %u - TotalWaveTime: %u - TotalTestTime: %u - Ratio: %.01f / %.01f %%\n", 
-         	primeStats.nWaveRound == 0 ? 0 : primeStats.nWaveTime / primeStats.nWaveRound, primeStats.nWaveRound, nL1CacheElements,
-         	primeStats.nWaveTime, primeStats.nTestTime, ratio, 100.0 - ratio);
+          primeStats.nWaveRound == 0 ? 0 : primeStats.nWaveTime / primeStats.nWaveRound, primeStats.nWaveRound, primeStats.nL1CacheElements,
+          primeStats.nWaveTime, primeStats.nTestTime, ratio, 100.0 - ratio);
          printf( "PrimorialMultiplier: %u\n",  primeStats.nPrimorialMultiplier);
          printf("\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\n");
          //JLR DBG END
@@ -1522,15 +1528,15 @@ static void RoundSieveAutoTuningWorkerThread(bool bEnabled)
 void PrintCurrentSettings()
 {
 	using namespace std;
-	unsigned long uptime = (getTimeMilliseconds() - primeStats.startTime);
+	uint64_t uptime = (getTimeMilliseconds() - primeStats.startTime);
 
-   unsigned int days = uptime / (24 * 60 * 60 * 1000);
+	uint64_t days = uptime / (24 * 60 * 60 * 1000);
    uptime %= (24 * 60 * 60 * 1000);
-   unsigned int hours = uptime / (60 * 60 * 1000);
+   uint64_t hours = uptime / (60 * 60 * 1000);
    uptime %= (60 * 60 * 1000);
-   unsigned int minutes = uptime / (60 * 1000);
+   uint64_t minutes = uptime / (60 * 1000);
    uptime %= (60 * 1000);
-   unsigned int seconds = uptime / (1000);
+   uint64_t seconds = uptime / (1000);
 
 	cout << endl << "--------------------------------------------------------------------------------"<< endl;
 	cout << "Worker name (-u): " << commandlineInput.workername << endl;
@@ -1684,7 +1690,7 @@ static struct termios oldt, newt;
 
 #ifdef _WIN32
 typedef std::pair <DWORD, HANDLE> thMapKeyVal;
-uint64 * threadHearthBeat;
+time_t* threadHearthBeat;
 
 static void watchdog_thread(std::map<DWORD, HANDLE> threadMap)
 #else
@@ -1692,7 +1698,7 @@ static void *watchdog_thread(void *)
 #endif
 {
 #ifdef _WIN32
-	   	uint32 maxIdelTime = 10 * 1000;
+	uint32_t maxIdelTime = 10 * 1000;
 		std::map <DWORD, HANDLE> :: const_iterator thMap_Iter;
 #endif
 
@@ -1711,10 +1717,10 @@ static void *watchdog_thread(void *)
 
 #ifdef _WIN32
 
-         DWORD currentTick = GetTickCount();
-         for (int i = 0; i < threadMap.size(); i++)
+         time_t currentTick = getTimeMilliseconds();
+         for (size_t i = 0; i < threadMap.size(); i++)
          {
-            DWORD heartBeatTick = threadHearthBeat[i];
+			 time_t heartBeatTick = threadHearthBeat[i];
             if (currentTick - heartBeatTick > maxIdelTime)
             {
                //restart the thread
@@ -1730,7 +1736,7 @@ static void *watchdog_thread(void *)
                   Sleep(1000);
                   CloseHandle(h);
                   Sleep(1000);
-                  threadHearthBeat[i] = GetTickCount();
+				  threadHearthBeat[i] = getTimeMilliseconds();
                   threadMap.erase(thMap_Iter);
                   h = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)jhMiner_workerThread_xpt, (LPVOID)i, 0, 0);
                   SetThreadPriority(h, THREAD_PRIORITY_BELOW_NORMAL);
@@ -1791,16 +1797,16 @@ void PrintStat()
       double statsPassedTime = (double)(getTimeMilliseconds() - primeStats.primeLastUpdate);
       if( statsPassedTime < 1.0 ) statsPassedTime = 1.0; // avoid division by zero
       if( totalRunTime < 1.0 ) totalRunTime = 1.0; // avoid division by zero
-      double primesPerSecond = (double)primeStats.primeChainsFound / (statsPassedTime / 1000.0);
-      float avgCandidatesPerRound = (double)primeStats.nCandidateCount / primeStats.nSieveRounds;
-      float sievesPerSecond = (double)primeStats.nSieveRounds / (statsPassedTime / 1000.0);
+      double primesPerSecond = (double)(primeStats.primeChainsFound / (statsPassedTime / 1000.0));
+      float avgCandidatesPerRound = primeStats.nCandidateCount / primeStats.nSieveRounds;
+      float sievesPerSecond = primeStats.nSieveRounds / (statsPassedTime / 1000.0);
 
-      uint32 bestDifficulty = primeStats.bestPrimeChainDifficulty;
+	  uint32_t bestDifficulty = primeStats.bestPrimeChainDifficulty;
       primeStats.bestPrimeChainDifficulty = 0;
       float primeDifficulty = GetChainDifficulty(bestDifficulty);
       float bestChainSinceLaunch = GetChainDifficulty(primeStats.bestPrimeChainDifficultySinceLaunch);
       float shareValuePerHour = primeStats.fShareValue / totalRunTime * 3600000.0;
-      printf("\nVal/h:%8f - PPS:%d - SPS:%.03f - ACC:%d\n", shareValuePerHour, (sint32)primesPerSecond, sievesPerSecond, (sint32)avgCandidatesPerRound);
+	  printf("\nVal/h:%8f - PPS:%d - SPS:%.03f - ACC:%d\n", shareValuePerHour, (int32_t)primesPerSecond, sievesPerSecond, (int32_t)avgCandidatesPerRound);
       printf(" Chain/Hr: ");
 
       for(int i=6; i<=10; i++)
@@ -1825,7 +1831,7 @@ void PrintStat()
 int jhMiner_main_gbtMode()
 {
    // main thread, query work every x seconds
-   sint32 loopCounter = 0;
+	int32_t loopCounter = 0;
    while( true )
    {
       // query new work
@@ -1840,12 +1846,12 @@ int jhMiner_main_gbtMode()
          primeStats.nSieveRounds = 0;
       }		
       // wait and check some stats
-      uint32 time_updateWork = getTimeMilliseconds();
+	  uint64_t time_updateWork = getTimeMilliseconds();
       while( true )
       {
          if (appQuitSignal)
             return 0;
-         uint32 passedTime = getTimeMilliseconds() - time_updateWork;
+		 uint64_t passedTime = getTimeMilliseconds() - time_updateWork;
          if( passedTime >= 4000 )
             break;
          int currentBlockCount = getBlockTemplateData.height;
@@ -1873,7 +1879,7 @@ int jhMiner_main_gbtMode()
 int jhMiner_main_getworkMode()
 {
    // main thread, query work every x seconds
-   sint32 loopCounter = 0;
+   int32_t loopCounter = 0;
    while( true )
    {
       // query new work
@@ -1888,12 +1894,12 @@ int jhMiner_main_getworkMode()
          primeStats.nSieveRounds = 0;
       }		
       // wait and check some stats
-      uint32 time_updateWork = getTimeMilliseconds();
+	  uint64_t time_updateWork = getTimeMilliseconds();
       while( true )
       {
          if (appQuitSignal)
             return 0;
-         uint32 passedTime = getTimeMilliseconds() - time_updateWork;
+		 uint64_t passedTime = getTimeMilliseconds() - time_updateWork;
          if( passedTime >= 4000 )
             break;
 
@@ -1923,8 +1929,8 @@ int jhMiner_main_getworkMode()
 int jhMiner_main_xptMode()
 {
    // main thread, don't query work, just wait and process
-   sint32 loopCounter = 0;
-   uint32 xptWorkIdentifier = 0xFFFFFFFF;
+   int32_t loopCounter = 0;
+   uint32_t xptWorkIdentifier = 0xFFFFFFFF;
    //unsigned long lastFiveChainCount = 0;
    //unsigned long lastFourChainCount = 0;
    while( true )
@@ -1939,13 +1945,13 @@ int jhMiner_main_xptMode()
          primeStats.nSieveRounds = 0;
       }
       // wait and check some stats
-      uint32 time_updateWork = getTimeMilliseconds();
+	  uint64_t time_updateWork = getTimeMilliseconds();
       while( true )
       {
          if (appQuitSignal)
             return 0;
-         uint32 tickCount = getTimeMilliseconds();
-         uint32 passedTime = tickCount - time_updateWork;
+		 uint64_t tickCount = getTimeMilliseconds();
+		 uint64_t passedTime = tickCount - time_updateWork;
 
          if( passedTime >= 4000 )
             break;
@@ -1954,7 +1960,7 @@ int jhMiner_main_xptMode()
          if( workData.xptClient == NULL || xptClient_isDisconnected(workData.xptClient, &disconnectReason) )
          {
             // disconnected, mark all data entries as invalid
-            for(uint32 i=0; i<128; i++)
+            for(uint32_t i=0; i<128; i++)
                workData.workEntry[i].dataIsValid = false;
             printf("xpt: Disconnected, auto reconnect in 30 seconds\n");
             if( workData.xptClient && disconnectReason )
@@ -1977,16 +1983,16 @@ int jhMiner_main_xptMode()
          {
             // printf("New work\n");
             xptWorkIdentifier = workData.xptClient->workDataCounter;
-            for(uint32 i=0; i<workData.xptClient->payloadNum; i++)
+            for(uint32_t i=0; i<workData.xptClient->payloadNum; i++)
             {
-               uint8 blockData[256];
+               uint8_t blockData[256];
                memset(blockData, 0x00, sizeof(blockData));
-               *(uint32*)(blockData+0) = workData.xptClient->blockWorkInfo.version;
+               *(uint32_t*)(blockData+0) = workData.xptClient->blockWorkInfo.version;
                memcpy(blockData+4, workData.xptClient->blockWorkInfo.prevBlock, 32);
                memcpy(blockData+36, workData.xptClient->workData[i].merkleRoot, 32);
-               *(uint32*)(blockData+68) = workData.xptClient->blockWorkInfo.nTime;
-               *(uint32*)(blockData+72) = workData.xptClient->blockWorkInfo.nBits;
-               *(uint32*)(blockData+76) = 0; // nonce
+               *(uint32_t*)(blockData+68) = workData.xptClient->blockWorkInfo.nTime;
+               *(uint32_t*)(blockData+72) = workData.xptClient->blockWorkInfo.nBits;
+               *(uint32_t*)(blockData+76) = 0; // nonce
                memcpy(workData.workEntry[i].data, blockData, 80);
                ((serverData_t*)workData.workEntry[i].serverData)->blockHeight = workData.xptClient->blockWorkInfo.height;
                ((serverData_t*)workData.workEntry[i].serverData)->nBitsForShare = workData.xptClient->blockWorkInfo.nBitsShare;
@@ -2060,18 +2066,19 @@ int main(int argc, char **argv)
    {
       DecodeBase58(commandlineInput.xpmAddress, decodedWalletAddress, &decodedWalletAddressLen);
       sha256_context ctx;
-      uint8 addressValidationHash[32];
+      uint8_t addressValidationHash[32];
       sha256_starts(&ctx);
-      sha256_update(&ctx, (uint8*)decodedWalletAddress, 20+1);
+      sha256_update(&ctx, (uint8_t*)decodedWalletAddress, 20+1);
       sha256_finish(&ctx, addressValidationHash);
       sha256_starts(&ctx); // is this line needed?
       sha256_update(&ctx, addressValidationHash, 32);
       sha256_finish(&ctx, addressValidationHash);
-      if( *(uint32*)addressValidationHash != *(uint32*)(decodedWalletAddress+21) )
+      if( *(uint32_t*)addressValidationHash != *(uint32_t*)(decodedWalletAddress+21) )
       {
          printf("Address '%s' is not a valid wallet address.\n", decodedWalletAddress);
          exit(-2);
       }
+	  useGetBlockTemplate = true;
    }
    // print header
    printf("\n");
@@ -2110,7 +2117,7 @@ int main(int argc, char **argv)
   pthread_mutex_init(&workData.cs, NULL);
 #endif
    // connect to host
-#ifdef _WIN32
+#ifndef _WIN32
    hostent* hostInfo = gethostbyname(commandlineInput.host);
    if( hostInfo == NULL )
    {
@@ -2118,10 +2125,10 @@ int main(int argc, char **argv)
       exit(-1);
    }
    void** ipListPtr = (void**)hostInfo->h_addr_list;
-   uint32 ip = 0xFFFFFFFF;
+   uint32_t ip = 0xFFFFFFFF;
    if( ipListPtr[0] )
    {
-      ip = *(uint32*)ipListPtr[0];
+      ip = *(uint32_t*)ipListPtr[0];
    }
    char ipText[32];
    esprintf(ipText, "%d.%d.%d.%d", ((ip>>0)&0xFF), ((ip>>8)&0xFF), ((ip>>16)&0xFF), ((ip>>24)&0xFF));
@@ -2148,7 +2155,7 @@ int main(int argc, char **argv)
 	primeStats.shareRejected = false;
 	primeStats.primeChainsFound = 0;
 	primeStats.foundShareCount = 0;
-   for(uint32 i = 0; i < sizeof(primeStats.chainCounter[0])/sizeof(uint32);  i++)
+   for(uint32_t i = 0; i < sizeof(primeStats.chainCounter[0])/sizeof(uint32_t);  i++)
    {
       primeStats.chainCounter[0][i] = 0;
       primeStats.chainCounter[1][i] = 0;
@@ -2270,9 +2277,9 @@ int main(int argc, char **argv)
    // start threads
    // Although we create all the required heartbeat structures, there is no heartbeat watchdog in GetWork mode. 
    std::map<DWORD, HANDLE> threadMap;
-   threadHearthBeat = (DWORD *)malloc( commandlineInput.numThreads * sizeof(DWORD));
+   threadHearthBeat = (time_t *)malloc(commandlineInput.numThreads * sizeof(time_t));
    // start threads
-   for(sint32 threadIdx=0; threadIdx<commandlineInput.numThreads; threadIdx++)
+   for(int32_t threadIdx=0; threadIdx<commandlineInput.numThreads; threadIdx++)
    {
       HANDLE hThread;
       if( workData.protocolMode == MINER_PROTOCOL_GETWORK )
@@ -2284,7 +2291,7 @@ int main(int argc, char **argv)
 
       SetThreadPriority(hThread, THREAD_PRIORITY_BELOW_NORMAL);
       threadMap.insert(thMapKeyVal(threadIdx,hThread));
-      threadHearthBeat[threadIdx] = GetTickCount();
+	  threadHearthBeat[threadIdx] = getTimeMilliseconds();
    }
 
 #else
@@ -2303,7 +2310,7 @@ int main(int argc, char **argv)
   pthread_attr_setdetachstate(&threadAttr, PTHREAD_CREATE_DETACHED);
   
   // start threads
-	for(uint32 threadIdx=0; threadIdx<commandlineInput.numThreads; threadIdx++)
+	for(uint32_t threadIdx=0; threadIdx<commandlineInput.numThreads; threadIdx++)
   {
       if( workData.protocolMode == MINER_PROTOCOL_GETWORK )
 	  pthread_create(&threads[threadIdx], &threadAttr, jhMiner_workerThread_getwork, (void *)threadIdx);

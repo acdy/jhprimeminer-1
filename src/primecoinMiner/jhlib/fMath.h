@@ -83,10 +83,10 @@ float random_float01();
 
 // intersection
 bool intersection_rayBox(vector3D_t* orig, vector3D_t* dir, vector3D_t* box_max, vector3D_t* box_min, float* distance);
-bool intersection_rayBox(vector3D_t* orig, vector3D_t* dir, vector3D_t* box_max, vector3D_t* box_min, float* distance, uint8* intersectionFace);
+bool intersection_rayBox(vector3D_t* orig, vector3D_t* dir, vector3D_t* box_max, vector3D_t* box_min, float* distance, uint8_t* intersectionFace);
 
 inline float _fastAbs(float v);
 
 // bitstuff
-uint32 getLeastBitIndex(uint32 mask);
+uint32_t getLeastBitIndex(uint32_t mask);
 

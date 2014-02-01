@@ -3,12 +3,12 @@
 
 typedef struct
 {
-	sint32	sizeX;
-	sint32	sizeY;
-	uint8	bitDepth;
+	int32_t	sizeX;
+	int32_t	sizeY;
+	uint8_t	bitDepth;
 	void*	data;
-	//uint8	format;
-	//uint32	bytesPerRow;
+	//uint8_t	format;
+	//uint32_t	bytesPerRow;
 }bitmap_t;
 
 bitmap_t *bmp_load(char *path);

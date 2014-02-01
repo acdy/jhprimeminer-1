@@ -1,14 +1,13 @@
-
-
 #ifndef __JHSYSTEMLIB
 #define __JHSYSTEMLIB
+
+#include "../inttype.h"
 
 #ifdef _WIN32
 #define NOMINMAX
 #include<Windows.h>
 #else
 #include <signal.h>
-#include <stdint.h>
 #endif
 #include <cstring> // for memcpy/memset
 #include<math.h>
@@ -24,38 +23,17 @@ T* tmp_addressof(T& arg) {
 }
 #endif
 /*
-typedef unsigned long long 	uint64;
-typedef signed long long	sint64;
+typedef unsigned long long 	uint64_t;
+typedef signed long long	int64_t;
 
-typedef unsigned int 	uint32;
-typedef signed int 		sint32;
+typedef unsigned int 	uint32_t;
+typedef signed int 		int32_t;
 
-typedef unsigned short 	uint16;
-typedef signed short 	sint16;
+typedef unsigned short 	uint16_t;
+typedef signed short 	int16_t;
 
-typedef unsigned char 	uint8;
-typedef signed char 	sint8;*/
-
-#ifdef _WIN32
-typedef __int64           sint64;
-typedef unsigned __int64  uint64;
-typedef __int32           sint32;
-typedef unsigned __int32  uint32;
-typedef __int16           sint16;
-typedef unsigned __int16  uint16;
-typedef __int8            sint8;
-typedef unsigned __int8   uint8;
-#else
-typedef int64_t sint64;
-typedef uint64_t uint64;
-typedef int32_t sint32;
-typedef uint32_t uint32;
-typedef int16_t sint16;
-typedef uint16_t uint16;
-typedef int8_t sint8t;
-typedef uint8_t uint8;
-#endif
-
+typedef unsigned char 	uint8_t;
+typedef signed char 	int8_t;*/
 
 #define JHCALLBACK	__fastcall
 
@@ -66,9 +44,9 @@ void _ex1_free(void* p);
 
 void _ex2_initialize();
 
-void* _ex2_malloc(int size, char* file, sint32 line);
-void* _ex2_realloc(void* old, int size, char* file, sint32 line);
-void _ex2_free(void* p, char* file, sint32 line);
+void* _ex2_malloc(int size, char* file, int32_t line);
+void* _ex2_realloc(void* old, int size, char* file, int32_t line);
+void _ex2_free(void* p, char* file, int32_t line);
 void _ex2_analyzeMemoryLog();
 
 // memory validator

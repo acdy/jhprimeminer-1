@@ -145,13 +145,13 @@ static uint32_t ALWAYS_INLINE ctz( uint32_t x )
  */
 int inline BN2_nz_num_unset_bits_from_lsb(const BIGNUM *a)
 {
-	sint32 bIdx = 0;
-	uint32 idx = 0;
-	sint32 maxIdx = a->top-1;
+	int32_t bIdx = 0;
+	uint32_t idx = 0;
+	int32_t maxIdx = a->top - 1;
 	do 
 	{
 #ifdef _WIN32
-		_BitScanForward(&idx, a->d[bIdx]);
+		_BitScanForward((unsigned long *)&idx, a->d[bIdx]);
 #else
 		idx = ctz(a->d[bIdx]);
 #endif
@@ -520,9 +520,9 @@ BIGNUM *BN2_mod_inverse(BIGNUM *in,
 			/* Now divide  B  by the maximum possible power of two in the integers,
 			* and divide  X  by the same value mod |n|.
 			* When we're done, (1) still holds. */
-			uint32 shiftAmount = BN2_nz_num_unset_bits_from_lsb(B);
+			uint32_t shiftAmount = BN2_nz_num_unset_bits_from_lsb(B);
 			shift = shiftAmount;
-			for(uint32 sa=0; sa<shiftAmount; sa++)
+			for (uint32_t sa = 0; sa<shiftAmount; sa++)
 			{
 				if (BN_is_odd(X))
 				{
@@ -538,7 +538,7 @@ BIGNUM *BN2_mod_inverse(BIGNUM *in,
 			/* Same for  A  and  Y.  Afterwards, (2) still holds. */
 			shiftAmount = BN2_nz_num_unset_bits_from_lsb(A);
 			shift = shiftAmount;
-			for(uint32 sa=0; sa<shiftAmount; sa++)
+			for (uint32_t sa = 0; sa<shiftAmount; sa++)
 			{
 				if (BN_is_odd(Y))
 				{

@@ -128,7 +128,7 @@ int esprintf_d(char *out, int value, int padRight, int padZero, int width)
 int esprintf_hf(char *out, float valueF, int padRight, int padZero, int width)
 {
 	char* outInitial = out;
-	sint32 value = (sint32)floor(valueF);
+	int32_t value = (int32_t)floor(valueF);
 //	int c = 0;   unused?
 	char DezimalStr[32];
 	int dl = 0; //DezimalLength
@@ -203,7 +203,7 @@ int esprintf_hf(char *out, float valueF, int padRight, int padZero, int width)
 
 	//int dl2 = dl; unused
 
-	value = (sint32)((valueF - floor(valueF))*100000.0f);
+	value = (int32_t)((valueF - floor(valueF))*100000.0f);
 	//c = 0; unused
 	dl = 0; //DezimalLength
 	padZero = 1;
@@ -477,7 +477,7 @@ int esprintf_X(char *out, unsigned int value, int padRight, int padZero, int wid
  * Param = pointer to parameters used for format insertion
  */
 #ifdef _WIN64
-void __cdecl _esprintf(char *out, char *format, unsigned int *lengthOut)
+void __cdecl _esprintf(char *out, char *format, uint64_t *param, unsigned int *lengthOut)
 #elif defined (_WIN32)
 void __cdecl _esprintf(char *out, char *format, unsigned int *lengthOut)
 #else // gcc
@@ -494,7 +494,7 @@ void esprintf(char *out, char *format, ...)
 	//param++; // skip first parameter
 	//_esprintf(out, format, param, NULL);
 	#ifdef _WIN64
-		uint64 *param = (uint64*)_ADDRESSOF(format);
+		uint64_t *param = (uint64_t*)_ADDRESSOF(format);
 		param++; // skip first parameter
 		unsigned int formattedLength = 0;
 		_esprintf(out, format, param, &formattedLength);
@@ -578,7 +578,7 @@ void esprintf(char *out, char *format, ...)
 
 				if( *p == 'd' ) //signed integer
 				{
-					o += esprintf_d(o, va_arg(arguments,sint64), PadRight, PadZero, Width);
+					o += esprintf_d(o, va_arg(arguments,int64_t), PadRight, PadZero, Width);
 				}
 				else if( p[0] == 'u' && p[1] == 't' && p[2] == 'f' && p[3] == '8' ) //utf8 string
 				{

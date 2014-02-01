@@ -3,15 +3,15 @@
 /*
  * Sends the response for an auth packet
  */
-bool xptServer_sendAuthResponse(xptServer_t* xptServer, xptServerClient_t* xptServerClient, uint32 authErrorCode, char* rejectReason)
+bool xptServer_sendAuthResponse(xptServer_t* xptServer, xptServerClient_t* xptServerClient, uint32_t authErrorCode, char* rejectReason)
 {
 	bool sendError = false;
 	xptPacketbuffer_beginWritePacket(xptServer->sendBuffer, XPT_OPC_S_AUTH_ACK);
 	xptPacketbuffer_writeU32(xptServer->sendBuffer, &sendError, authErrorCode);
 	// write reject reason string (or motd in case of no error)
-	sint32 rejectReasonLength = fStrLen(rejectReason);
-	xptPacketbuffer_writeU16(xptServer->sendBuffer, &sendError, (uint16)rejectReasonLength);
-	xptPacketbuffer_writeData(xptServer->sendBuffer, (uint8*)rejectReason, (uint32)rejectReasonLength, &sendError);
+	int32_t rejectReasonLength = fStrLen(rejectReason);
+	xptPacketbuffer_writeU16(xptServer->sendBuffer, &sendError, (uint16_t)rejectReasonLength);
+	xptPacketbuffer_writeData(xptServer->sendBuffer, (uint8_t*)rejectReason, (uint32_t)rejectReasonLength, &sendError);
 	// finalize
 	xptPacketbuffer_finalizeWritePacket(xptServer->sendBuffer);
 	// send to client
@@ -48,7 +48,7 @@ bool xptServer_sendBlockData(xptServer_t* xptServer, xptServerClient_t* xptServe
 	xptPacketbuffer_writeU32(xptServer->sendBuffer, &sendError, blockWorkInfo.nTime);				// nTimestamp
 	xptPacketbuffer_writeData(xptServer->sendBuffer, blockWorkInfo.prevBlock, 32, &sendError);		// prevBlockHash
 	xptPacketbuffer_writeU32(xptServer->sendBuffer, &sendError, xptServerClient->payloadNum);		// payload num
-	for(uint32 i=0; i<xptServerClient->payloadNum; i++)
+	for(uint32_t i=0; i<xptServerClient->payloadNum; i++)
 	{
 		// add merkle root for each work data entry
 		xptPacketbuffer_writeData(xptServer->sendBuffer, workData[i].merkleRoot, 32, &sendError);
@@ -72,12 +72,12 @@ bool xptServer_processPacket_authRequest(xptServer_t* xptServer, xptServerClient
 	//// read data from the packet
 	//xptPacketbuffer_beginReadPacket(cpb);
 
-	//uint32 	version;				//version of the x.pushthrough protocol used
-	//uint32	usernameLength;			// range 1-128	
+	//uint32_t 	version;				//version of the x.pushthrough protocol used
+	//uint32_t	usernameLength;			// range 1-128	
 	//char	username[128+4];		// workername
-	//uint32	passwordLength;			// range 1-128	
+	//uint32_t	passwordLength;			// range 1-128	
 	//char	password[128+4];		// workername
-	//uint32	payloadNum;				// number of different merkleRoots the server will generate for each block data request. Valid range: 1-128
+	//uint32_t	payloadNum;				// number of different merkleRoots the server will generate for each block data request. Valid range: 1-128
 	//// start parsing
 	//bool readError = false;
 	//// read version field
@@ -92,7 +92,7 @@ bool xptServer_processPacket_authRequest(xptServer_t* xptServer, xptServerClient
 	//	return false;
 	//// read username
 	//memset(username, 0x00, sizeof(username));
-	//xptPacketbuffer_readData(cpb, (uint8*)username, usernameLength, &readError);
+	//xptPacketbuffer_readData(cpb, (uint8_t*)username, usernameLength, &readError);
 	//username[128] = '\0';
 	//if( readError )
 	//	return false;
@@ -104,7 +104,7 @@ bool xptServer_processPacket_authRequest(xptServer_t* xptServer, xptServerClient
 	//	return false;
 	//// read password
 	//memset(password, 0x00, sizeof(password));
-	//xptPacketbuffer_readData(cpb, (uint8*)password, passwordLength, &readError);
+	//xptPacketbuffer_readData(cpb, (uint8_t*)password, passwordLength, &readError);
 	//password[128] = '\0';
 	//if( readError )
 	//	return false;
@@ -113,7 +113,7 @@ bool xptServer_processPacket_authRequest(xptServer_t* xptServer, xptServerClient
 	//if( readError )
 	//	return false;
 	//// prepare reject stuff
-	//uint8 rejectReasonCode = XPT_ERROR_NONE; // 0 -> no error
+	//uint8_t rejectReasonCode = XPT_ERROR_NONE; // 0 -> no error
 	//char* rejectReasonText = NULL;
 	//// everything read successfully from the packet, validate worker
 	//// get worker login
@@ -137,7 +137,7 @@ bool xptServer_processPacket_authRequest(xptServer_t* xptServer, xptServerClient
 	//	// leave and disconnect client
 	//	return false;
 	//}
-	//uint16 coinTypeIndex = dbWorkerLogin->coinType-1;
+	//uint16_t coinTypeIndex = dbWorkerLogin->coinType-1;
 	//// currently only Primecoin supports XPT
 	//if( yPoolWorkMgr_getAlgorithm(coinTypeIndex) != ALGORITHM_PRIME )
 	//{

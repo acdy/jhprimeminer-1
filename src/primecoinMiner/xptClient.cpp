@@ -2,6 +2,8 @@
 #include"ticker.h"
 #ifndef _WIN32
 #include <errno.h>
+#else
+#include<iostream>
 #endif
 
 #ifdef _WIN32
@@ -40,7 +42,7 @@ int xptClient_openConnection(char *IP, int Port)
  * Opens a new x.pushthrough connection
  * target is the server address + worker login data to use for connecting
  */
-xptClient_t* xptClient_connect(jsonRequestTarget_t* target, uint32 payloadNum)
+xptClient_t* xptClient_connect(jsonRequestTarget_t* target, uint32_t payloadNum)
 {
 	// first try to connect to the given host/port
 #ifdef _WIN32
@@ -69,7 +71,7 @@ xptClient_t* xptClient_connect(jsonRequestTarget_t* target, uint32 payloadNum)
 	xptClient->recvBuffer = xptPacketbuffer_create(64*1024);
 	fStrCpy(xptClient->username, target->authUser, 127);
 	fStrCpy(xptClient->password, target->authPass, 127);
-	xptClient->payloadNum = std::max<uint32>(1, std::min<uint32>(127, payloadNum));
+	xptClient->payloadNum = std::max<uint32_t>(1, std::min<uint32_t>(127, payloadNum));
 #ifdef _WIN32
 	InitializeCriticalSection(&xptClient->cs_shareSubmit);
 #else
@@ -111,10 +113,10 @@ void xptClient_client2ServerSent(xptClient_t* xptClient)
 /*
  * Sends the worker login packet
  */
-void xptClient_sendClientServerPing(xptClient_t* xptClient, uint64 timestamp)
+void xptClient_sendClientServerPing(xptClient_t* xptClient, uint64_t timestamp)
 {
-	uint32 tsLow = (uint32) timestamp;
-	uint32 tsHigh = (uint32) (timestamp >> 32);
+	uint32_t tsLow = (uint32_t) timestamp;
+	uint32_t tsHigh = (uint32_t) (timestamp >> 32);
 	// build the packet
 	bool sendError = false;
 	xptPacketbuffer_beginWritePacket(xptClient->sendBuffer, XPT_OPC_C_PING);
@@ -130,7 +132,7 @@ void xptClient_sendClientServerPing(xptClient_t* xptClient, uint64 timestamp)
 
 void xptClient_processClientServerPing(xptClient_t* xptClient)
 {
-	uint64 now = getTimeMilliseconds();
+	uint64_t now = getTimeMilliseconds();
 	if ((xptClient->lastClient2ServerInteractionTimestamp + XPT_CLIENT_SERVER_PING_INTERVAL) < now)
 	{
 		xptClient_sendClientServerPing(xptClient, now);
@@ -222,7 +224,7 @@ bool xptClient_process(xptClient_t* xptClient)
 #endif
 	if( xptClient->list_shareSubmitQueue->objectCount > 0 )
 	{
-		for(uint32 i=0; i<xptClient->list_shareSubmitQueue->objectCount; i++)
+		for(uint32_t i=0; i<xptClient->list_shareSubmitQueue->objectCount; i++)
 		{
 			xptShareToSubmit_t* xptShareToSubmit = (xptShareToSubmit_t*)xptClient->list_shareSubmitQueue->objects[i];
 			xptClient_sendShare(xptClient, xptShareToSubmit);
@@ -237,12 +239,12 @@ bool xptClient_process(xptClient_t* xptClient)
   pthread_mutex_unlock(&xptClient->cs_shareSubmit);
 #endif
 	// check for packets
-	uint32 packetFullSize = 4; // the packet always has at least the size of the header
+	uint32_t packetFullSize = 4; // the packet always has at least the size of the header
 	if( xptClient->recvSize > 0 )
 		packetFullSize += xptClient->recvSize;
-	sint32 bytesToReceive = (sint32)(packetFullSize - xptClient->recvIndex);
+	int32_t bytesToReceive = (int32_t)(packetFullSize - xptClient->recvIndex);
 	// packet buffer is always large enough at this point
-	sint32 r = recv(xptClient->clientSocket, (char*)(xptClient->recvBuffer->buffer+xptClient->recvIndex), bytesToReceive, 0);
+	int32_t r = recv(xptClient->clientSocket, (char*)(xptClient->recvBuffer->buffer+xptClient->recvIndex), bytesToReceive, 0);
 	if( r <= 0 )
 	{
 #ifdef _WIN32
@@ -270,9 +272,9 @@ bool xptClient_process(xptClient_t* xptClient)
 	if( xptClient->recvIndex == packetFullSize && packetFullSize == 4 )
 	{
 		// process header
-		uint32 headerVal = *(uint32*)xptClient->recvBuffer->buffer;
-		uint32 opcode = (headerVal&0xFF);
-		uint32 packetDataSize = (headerVal>>8)&0xFFFFFF;
+		uint32_t headerVal = *(uint32_t*)xptClient->recvBuffer->buffer;
+		uint32_t opcode = (headerVal&0xFF);
+		uint32_t packetDataSize = (headerVal>>8)&0xFFFFFF;
 		// validate header size
 		if( packetDataSize >= (1024*1024*2-4) )
 		{

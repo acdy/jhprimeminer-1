@@ -4,11 +4,11 @@
 
 
 bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* block, mpz_class& bnFixedMultiplier, bool& fNewBlock, unsigned int& nTriedMultiplier, unsigned int& nProbableChainLength, 
-							unsigned int& , unsigned int& nPrimesHit, sint32 threadIndex, mpz_class& mpzHash, unsigned int nPrimorialMultiplier);
+							unsigned int& , unsigned int& nPrimesHit, int32_t threadIndex, mpz_class& mpzHash, unsigned int nPrimorialMultiplier);
 
 std::set<mpz_class> multiplierSet;
 
-bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psieve, const sint32 threadIndex, const unsigned int nonceStep)
+bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psieve, const int32_t threadIndex, const unsigned int nonceStep)
 {
 	//JLR DBG
 	//printf("PrimecoinMiner started\n");
@@ -35,12 +35,12 @@ bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psiev
 	// Generate a thread specific nonce.
 	primecoinBlock->nonce = threadIndex;
 
-	uint64 nTime = getTimeMilliseconds() + 1000*600;
-//	uint64 nStatTime = getTimeMilliseconds() + 2000;  unused?
+	uint64_t nTime = getTimeMilliseconds() + 1000*600;
+//	uint64_t nStatTime = getTimeMilliseconds() + 2000;  unused?
 	
 	// note: originally a wanted to loop as long as (primecoinBlock->workDataHash != jhMiner_getCurrentWorkHash()) did not happen
 	//		 but I noticed it might be smarter to just check if the blockHeight has changed, since that is what is really important
-	uint32 loopCount = 0;
+	uint32_t loopCount = 0;
 
 	//mpz_class mpzHashFactor;
 	//Primorial(nPrimorialHashFactor, mpzHashFactor);
@@ -48,20 +48,20 @@ bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psiev
 
 	time_t unixTimeStart;
 	time(&unixTimeStart);
-	uint32 nTimeRollStart = primecoinBlock->timestamp - 5;
-   uint32 nLastRollTime = getTimeMilliseconds();
-	uint32 nCurrentTick = nLastRollTime;
+	uint32_t nTimeRollStart = primecoinBlock->timestamp - 5;
+	uint32_t nLastRollTime = (uint32_t)getTimeMilliseconds();
+	uint32_t nCurrentTick = nLastRollTime;
 	while( nCurrentTick < nTime && primecoinBlock->serverData.blockHeight == jhMiner_getCurrentWorkBlockHeight(primecoinBlock->threadIndex) )
 			{
-		nCurrentTick = getTimeMilliseconds();
+		nCurrentTick = (uint32_t)getTimeMilliseconds();
       // Roll Time stamp every 10 secs.
 		if ((primecoinBlock->xptMode) && (nCurrentTick < nLastRollTime || (nLastRollTime - nCurrentTick >= 10000)))
 		{
 			// when using x.pushthrough, roll time
 			time_t unixTimeCurrent;
 			time(&unixTimeCurrent);
-			uint32 timeDif = unixTimeCurrent - unixTimeStart;
-			uint32 newTimestamp = nTimeRollStart + timeDif;
+			uint32_t timeDif = (uint32_t)unixTimeCurrent - (uint32_t)unixTimeStart;
+			uint32_t newTimestamp = nTimeRollStart + timeDif;
 			if( newTimestamp != primecoinBlock->timestamp )
 			{
 				primecoinBlock->timestamp = newTimestamp;
@@ -101,7 +101,7 @@ bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psiev
 		mpz_class mpzPrimorial;
 		unsigned int nRoundTests = 0;
 		unsigned int nRoundPrimesHit = 0;
-//		uint64 nPrimeTimerStart = getTimeMilliseconds();   unused?
+//		uint64_t nPrimeTimerStart = getTimeMilliseconds();   unused?
 		
 		//if( loopCount > 0 )
 		//{

@@ -1,18 +1,18 @@
 typedef struct  
 {
-	uint8 merkleRoot[32];
-	uint8 prevBlockHash[32];
-	uint32 version;
-	uint32 nonce;
-	uint32 nTime;
-	uint32 nBits;
+	uint8_t merkleRoot[32];
+	uint8_t prevBlockHash[32];
+	uint32_t version;
+	uint32_t nonce;
+	uint32_t nTime;
+	uint32_t nBits;
 	// primecoin specific
-	uint32 sieveSize;
-	uint32 sieveCandidate; // index of sieveCandidate for this share
-	uint8 fixedMultiplierSize;
-	uint8 fixedMultiplier[201];
-	uint8 chainMultiplierSize;
-	uint8 chainMultiplier[201];
+	uint32_t sieveSize;
+	uint32_t sieveCandidate; // index of sieveCandidate for this share
+	uint8_t fixedMultiplierSize;
+	uint8_t fixedMultiplier[201];
+	uint8_t chainMultiplierSize;
+	uint8_t chainMultiplier[201];
 }xptShareToSubmit_t;
 
 typedef struct  
@@ -27,19 +27,19 @@ typedef struct
 	// worker info
 	char username[128];
 	char password[128];
-	uint32 payloadNum;
-	uint32 clientState;
+	uint32_t payloadNum;
+	uint32_t clientState;
 	// recv info
-	uint32 recvSize;
-	uint32 recvIndex;
-	uint32 opcode;
+	uint32_t recvSize;
+	uint32_t recvIndex;
+	uint32_t opcode;
 	// disconnect info
 	bool disconnected;
 	char* disconnectReason;
 	// periodic ping/heartbeat info
-	uint64 lastClient2ServerInteractionTimestamp;
+	uint64_t lastClient2ServerInteractionTimestamp;
 	// work data
-	uint32 workDataCounter; // timestamp of when received the last block of work data
+	uint32_t workDataCounter; // timestamp of when received the last block of work data
 	bool workDataValid;
 	xptBlockWorkInfo_t blockWorkInfo;
 	xptWorkData_t workData[128]; // size equal to max payload num
@@ -52,7 +52,7 @@ typedef struct
 	simpleList_t* list_shareSubmitQueue;
 }xptClient_t;
 
-xptClient_t* xptClient_connect(jsonRequestTarget_t* target, uint32 payloadNum);
+xptClient_t* xptClient_connect(jsonRequestTarget_t* target, uint32_t payloadNum);
 void xptClient_free(xptClient_t* xptClient);
 
 bool xptClient_process(xptClient_t* xptClient); // needs to be called in a loop

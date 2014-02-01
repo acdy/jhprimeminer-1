@@ -1,13 +1,13 @@
 #include"global.h"
 
-uint8* json_emptyString = (uint8*)"";
+uint8_t* json_emptyString = (uint8_t*)"";
 
 void jsonParser_skipWhitespaces(jsonParser_t* jsonParser)
 {
 	while( jsonParser->dataCurrentPtr < jsonParser->dataEnd )
 	{
 		// skip whitespaces
-		uint8 c = *jsonParser->dataCurrentPtr;
+		uint8_t c = *jsonParser->dataCurrentPtr;
 		if( c == ' ' || c == '\t' || c == '\r' || c == '\n' )
 		{
 			jsonParser->dataCurrentPtr++;
@@ -23,25 +23,25 @@ void jsonParser_skipWhitespaces(jsonParser_t* jsonParser)
  * Trys to read a string from the json stream
  * If it fails, returns NULL and the current parser location is left untouched.
  */
-uint8* jsonParser_readString(jsonParser_t* jsonParser, uint32 maxLength, uint32* length)
+uint8_t* jsonParser_readString(jsonParser_t* jsonParser, uint32_t maxLength, uint32_t* length)
 {
-	uint8* backupPtr = jsonParser->dataCurrentPtr;
+	uint8_t* backupPtr = jsonParser->dataCurrentPtr;
 	jsonParser_skipWhitespaces(jsonParser);
 	if( jsonParser->dataCurrentPtr+2 > jsonParser->dataEnd )
 		return NULL; // a string never can have less than 2 chars (smallest string def: "")
-	uint8 c = *jsonParser->dataCurrentPtr;
+	uint8_t c = *jsonParser->dataCurrentPtr;
 	if( c != '\"' )
 		return NULL;
 	jsonParser->dataCurrentPtr++;
 	// first try to find length of full string
-	uint8* parsePtr = jsonParser->dataCurrentPtr;
-	sint32 stringLength = -1;
+	uint8_t* parsePtr = jsonParser->dataCurrentPtr;
+	int32_t stringLength = -1;
 	while( parsePtr < jsonParser->dataEnd )
 	{
 		// todo: Correctly process UTF8 characters
 		if( *parsePtr == '\"' )
 		{
-			stringLength = (sint32)(parsePtr - jsonParser->dataCurrentPtr);
+			stringLength = (int32_t)(parsePtr - jsonParser->dataCurrentPtr);
 			parsePtr++; // also skip the '"'
 			break;
 		}
@@ -56,12 +56,12 @@ uint8* jsonParser_readString(jsonParser_t* jsonParser, uint32 maxLength, uint32*
 	}
 	// stringLength is now the effective length of the string in bytes (without the quotation marks)
 	// note: if the string is too long we simply copy as many bytes as allowed and then skip the rest
-	sint32 effectiveStringLength = std::min((sint32)maxLength, stringLength);
-	uint8* stringBuffer = NULL;
+	int32_t effectiveStringLength = std::min((int32_t)maxLength, stringLength);
+	uint8_t* stringBuffer = NULL;
 	if( effectiveStringLength == 0 )
 		stringBuffer = json_emptyString;
 	else
-		stringBuffer = (uint8*)malloc(effectiveStringLength);
+		stringBuffer = (uint8_t*)malloc(effectiveStringLength);
 	// copy string data
 	memcpy(stringBuffer, jsonParser->dataCurrentPtr, effectiveStringLength);
 	jsonParser->dataCurrentPtr = parsePtr;
@@ -80,7 +80,7 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 	{
 		// skip whitespaces
 		jsonParser_skipWhitespaces(jsonParser);
-		uint8 c = *jsonParser->dataCurrentPtr;
+		uint8_t c = *jsonParser->dataCurrentPtr;
 		// check for '{'
 		if( c == '{' )
 		{
@@ -105,7 +105,7 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 				// next object delimiter ','
 				if( p > 0 && *jsonParser->dataCurrentPtr != ',' )
 				{
-					printf("JSON: Syntax error at character %d - Missing ',' between object parameters\n", (sint32)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
+					printf("JSON: Syntax error at character %d - Missing ',' between object parameters\n", (int32_t)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
 					jsonObject_freeObject((jsonObject_t*)jsonObjectRawObject);
 					return NULL;
 				}
@@ -116,8 +116,8 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 				}
 				// todo: In case of error free ALL already parsed data
 				// read string if possible
-				uint32 objectParamNameLength = 0;
-				uint8* objectParamName = jsonParser_readString(jsonParser, 4096, &objectParamNameLength); // max param length -> 4096
+				uint32_t objectParamNameLength = 0;
+				uint8_t* objectParamName = jsonParser_readString(jsonParser, 4096, &objectParamNameLength); // max param length -> 4096
 				if( objectParamName == NULL )
 				{
 					// failed to correctly parse the required param name string but not at end of object yet
@@ -130,14 +130,14 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 				jsonParser_skipWhitespaces(jsonParser);
 				if( jsonParser->dataCurrentPtr+1 > jsonParser->dataEnd )
 				{
-					printf("JSON: Syntax error at character %d\n", (sint32)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
+					printf("JSON: Syntax error at character %d\n", (int32_t)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
 					jsonObject_freeStringData(objectParamName);
 					jsonObject_freeObject((jsonObject_t*)jsonObjectRawObject);
 					return NULL;
 				}
 				if( *jsonParser->dataCurrentPtr != ':' )
 				{
-					printf("JSON: Syntax error at character %d - Object Name/Value delimiter \':\' missing\n", (sint32)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
+					printf("JSON: Syntax error at character %d - Object Name/Value delimiter \':\' missing\n", (int32_t)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
 					jsonObject_freeStringData(objectParamName);
 					jsonObject_freeObject((jsonObject_t*)jsonObjectRawObject);
 					return NULL;
@@ -160,7 +160,7 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 		else if( c == '}' )
 		{
 			// end of raw object (should never occur separate)
-			printf("JSON: Syntax error at character %d - Found end-of-object but no object start character\n", (sint32)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
+			printf("JSON: Syntax error at character %d - Found end-of-object but no object start character\n", (int32_t)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
 			return NULL;
 		}
 		else if( (jsonParser->dataCurrentPtr+4 < jsonParser->dataEnd) &&
@@ -194,8 +194,8 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 		}
 		else if( c == '\"' )
 		{
-			uint32 stringLength = 0;
-			uint8* stringData = jsonParser_readString(jsonParser, 1024*1024*1, &stringLength);
+			uint32_t stringLength = 0;
+			uint8_t* stringData = jsonParser_readString(jsonParser, 1024*1024*1, &stringLength);
 			if( stringData == NULL )
 			{
 				return NULL;
@@ -236,7 +236,7 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 					}
 					else
 					{
-						printf("JSON: Syntax error at character %d - Expected ','\n", (sint32)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
+						printf("JSON: Syntax error at character %d - Expected ','\n", (int32_t)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
 						jsonObject_freeObject((jsonObject_t*)jsonObjectArray);
 						return NULL;
 					}
@@ -256,8 +256,8 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 		else if( c == '-' || (c >= '0' && c <= '9') )
 		{
 			// parse number
-			sint64 integralPart = 0;
-			uint64 divider = 1;
+			int64_t integralPart = 0;
+			uint64_t divider = 1;
 			bool foundDot = false;
 			// is negative?
 			bool isNegative = false;
@@ -267,7 +267,7 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 				jsonParser->dataCurrentPtr++;
 			}
 			// parse digits
-			uint32 numOfDigits = 0;
+			uint32_t numOfDigits = 0;
 			while( jsonParser->dataCurrentPtr < jsonParser->dataEnd )
 			{
 				if( jsonParser->dataCurrentPtr[0] == '.' )
@@ -280,8 +280,8 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 					break;
 				if( foundDot )
 					divider *= 10ULL;
-				integralPart *= (sint64)10LL;
-				integralPart += (sint64)(jsonParser->dataCurrentPtr[0] - '0');
+				integralPart *= (int64_t)10LL;
+				integralPart += (int64_t)(jsonParser->dataCurrentPtr[0] - '0');
 				numOfDigits++;
 				// next
 				jsonParser->dataCurrentPtr++;
@@ -291,7 +291,7 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 			if( numOfDigits == 0 )
 			{
 				// a number without digits is not allowed
-				printf("JSON: Syntax error at character %d - Found '-' without digits\n", (sint32)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
+				printf("JSON: Syntax error at character %d - Found '-' without digits\n", (int32_t)(jsonParser->dataCurrentPtr - jsonParser->dataBuffer));
 				return NULL;
 			}
 			// set number
@@ -323,7 +323,7 @@ jsonObject_t* jsonParser_parseObject(jsonParser_t* jsonParser)
 	return NULL;
 }
 
-jsonObject_t* jsonParser_parse(uint8* stream, uint32 dataLength)
+jsonObject_t* jsonParser_parse(uint8_t* stream, uint32_t dataLength)
 {
 	// init local parser instance
 	jsonParser_t jsonParser;

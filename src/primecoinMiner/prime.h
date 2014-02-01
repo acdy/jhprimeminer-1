@@ -11,7 +11,7 @@
 #endif
 
 #ifdef _M_X64
-typedef uint64 sieve_word_t;
+typedef uint64_t sieve_word_t;
 #else
 typedef unsigned long sieve_word_t;
 #endif
@@ -51,7 +51,7 @@ static const mpz_class mpzPrimeMin = (mpzOne << 255);
 extern unsigned int nTargetInitialLength;
 extern unsigned int nTargetMinLength;
 #ifdef _WIN32
-extern DWORD * threadHearthBeat;
+extern time_t * threadHearthBeat;
 #endif
 
 // Generate small prime table
@@ -85,21 +85,21 @@ bool ProbablePrimeChainTestOrig(const mpz_class& bnPrimeChainOrigin, unsigned in
 static const unsigned int nFractionalBits = 24;
 static const unsigned int TARGET_FRACTIONAL_MASK = (1u<<nFractionalBits) - 1;
 static const unsigned int TARGET_LENGTH_MASK = ~TARGET_FRACTIONAL_MASK;
-static const uint64 nFractionalDifficultyMax = (1ull << (nFractionalBits + 32));
-static const uint64 nFractionalDifficultyMin = (1ull << 32);
-static const uint64 nFractionalDifficultyThreshold = (1ull << (8 + 32));
+static const uint64_t nFractionalDifficultyMax = (1ull << (nFractionalBits + 32));
+static const uint64_t nFractionalDifficultyMin = (1ull << 32);
+static const uint64_t nFractionalDifficultyThreshold = (1ull << (8 + 32));
 static const unsigned int nWorkTransitionRatio = 32;
 unsigned int TargetGetLimit();
 unsigned int TargetGetInitial();
 unsigned int TargetGetLength(unsigned int nBits);
 bool TargetSetLength(unsigned int nLength, unsigned int& nBits);
 unsigned int TargetGetFractional(unsigned int nBits);
-uint64 TargetGetFractionalDifficulty(unsigned int nBits);
-bool TargetSetFractionalDifficulty(uint64 nFractionalDifficulty, unsigned int& nBits);
+uint64_t TargetGetFractionalDifficulty(unsigned int nBits);
+bool TargetSetFractionalDifficulty(uint64_t nFractionalDifficulty, unsigned int& nBits);
 std::string TargetToString(unsigned int nBits);
 unsigned int TargetFromInt(unsigned int nLength);
-bool TargetGetMint(unsigned int nBits, uint64& nMint);
-bool TargetGetNext(unsigned int nBits, uint64_t nInterval, uint64_t nTargetSpacing, uint64 nActualSpacing, unsigned int& nBitsNext);
+bool TargetGetMint(unsigned int nBits, uint64_t& nMint);
+bool TargetGetNext(unsigned int nBits, uint64_t nInterval, uint64_t nTargetSpacing, uint64_t nActualSpacing, unsigned int& nBitsNext);
 
 // Mine probable prime chain of form: n = h * p# +/- 1
 //bool MineProbablePrimeChain(CBlock& block, CBigNum& bnFixedMultiplier, bool& fNewBlock, unsigned int& nTriedMultiplier, unsigned int& nProbableChainLength, unsigned int& nTests, unsigned int& nPrimesHit);
@@ -114,9 +114,9 @@ enum // prime chain type
 // bool CheckPrimeProofOfWork(uint256 hashBlockHeader, unsigned int nBits, const CBigNum& bnPrimeChainMultiplier, unsigned int& nChainType, unsigned int& nChainLength);
 
 // prime target difficulty value for visualization
-double GetPrimeDifficulty(unsigned int nBits);
+double GetPrimeDifficulty(double nBits);
 // Estimate work transition target to longer prime chain
-unsigned int EstimateWorkTransition(unsigned int nPrevWorkTransition, unsigned int nBits, unsigned int nChainLength);
+uint64_t EstimateWorkTransition(uint64_t nPrevWorkTransition, unsigned int nBits, unsigned int nChainLength);
 // prime chain type and length value
 std::string GetPrimeChainName(unsigned int nChainType, unsigned int nChainLength);
 
@@ -168,8 +168,8 @@ class CSieveOfEratosthenes
     unsigned int nCandidatesWords;
     unsigned int nCandidatesBytes;
 
-   unsigned int nMultiplierBytes;
-   unsigned int nAllocatedMultiplierBytes;
+   size_t nMultiplierBytes;
+   size_t nAllocatedMultiplierBytes;
    unsigned int *vCunningham1Multipliers;
    unsigned int *vCunningham2Multipliers;
 
@@ -182,9 +182,9 @@ class CSieveOfEratosthenes
     
    unsigned int nChainLength; // target chain length
    unsigned int nBTChainLength; // target chain length
-   unsigned int nSieveLayers; // sieve layers
-   unsigned int nPrimes; // number of times to weave the sieve
-   unsigned int nTotalPrimes;
+   size_t nSieveLayers; // sieve layers
+   size_t nPrimes; // number of times to weave the sieve
+   size_t nTotalPrimes;
     
     //CBlockIndex* pindexPrev;
     
@@ -211,7 +211,7 @@ public:
       this->nBTChainLength = nTargetBTLength;
       this->nSieveLayers = nChainLength + nSieveExtensions;
       this->nTotalPrimes = vPrimes.size();
-      this->nPrimes = (uint64)nTotalPrimes * nSievePercentage / 100;
+	  this->nPrimes = (uint64_t)nTotalPrimes * nSievePercentage / 100;
       this->nPrimeSeq = nMinPrimeSeq;
       this->nCandidateCount = 0;
       this->nCandidateMultiplier = 0;
@@ -282,7 +282,7 @@ public:
       this->nBTChainLength = nTargetBTLength;
       this->nSieveLayers = nChainLength + nSieveExtensions;
       this->nTotalPrimes = vPrimes.size();
-      this->nPrimes = (uint64)nTotalPrimes * nSievePercentage / 100;
+	  this->nPrimes = (uint64_t)nTotalPrimes * nSievePercentage / 100;
       this->nPrimeSeq = nMinPrimeSeq;
       this->nCandidateCount = 0;
       this->nCandidateMultiplier = 0;

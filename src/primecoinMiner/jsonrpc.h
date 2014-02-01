@@ -1,14 +1,14 @@
-extern uint8* json_emptyString;
+extern uint8_t* json_emptyString;
 
 typedef struct  
 {
-	uint8 type;
+	uint8_t type;
 }jsonObject_t; // the base object struct, should never be allocated directly
 
 typedef struct  
 {
-	uint8* stringNameData;
-	uint32 stringNameLength;
+	uint8_t* stringNameData;
+	uint32_t stringNameLength;
 	jsonObject_t* jsonObjectValue;
 }jsonObjectRawObjectParameter_t;
 
@@ -21,15 +21,15 @@ typedef struct
 typedef struct  
 {
 	jsonObject_t baseObject;
-	uint8* stringData;
-	uint32 stringLength;
+	uint8_t* stringData;
+	uint32_t stringLength;
 }jsonObjectString_t;
 
 typedef struct  
 {
 	jsonObject_t baseObject;
-	sint64 number;
-	uint64 divider; // divide number by this factor to get the real result (usually divider will be 1)
+	int64_t number;
+	uint64_t divider; // divide number by this factor to get the real result (usually divider will be 1)
 }jsonObjectNumber_t;
 
 typedef struct  
@@ -53,16 +53,16 @@ typedef struct
 
 typedef struct  
 {
-	uint8* dataBuffer;
-	uint32 dataLength;
-	uint8* dataCurrentPtr;
-	uint8* dataEnd;
+	uint8_t* dataBuffer;
+	uint32_t dataLength;
+	uint8_t* dataCurrentPtr;
+	uint8_t* dataEnd;
 }jsonParser_t;
 
 typedef struct  
 {
 	char* ip;
-	uint16 port;
+	uint16_t port;
 	char* authUser;
 	char* authPass;
 }jsonRequestTarget_t;
@@ -73,7 +73,7 @@ typedef struct
 #define JSON_ERROR_NO_RESULT			(3)		// missing result parameter
 
 
-jsonObject_t* jsonParser_parse(uint8* stream, uint32 dataLength);
+jsonObject_t* jsonParser_parse(uint8_t* stream, uint32_t dataLength);
 
 #define JSON_INITIAL_RECV_BUFFER_SIZE	(1024*4) // 4KB
 #define JSON_MAX_RECV_BUFFER_SIZE	(1024*1024*4) // 4MB
@@ -99,12 +99,12 @@ typedef struct
 #endif
 	bool disconnected;
 	// recv buffer
-	uint32 recvIndex;
-	uint32 recvSize;
-	uint8* recvBuffer;
+	uint32_t recvIndex;
+	uint32_t recvSize;
+	uint8_t* recvBuffer;
 	// recv header info
-	uint32 recvDataSizeFull;
-	uint32 recvDataHeaderEnd;
+	uint32_t recvDataSizeFull;
+	uint32_t recvDataHeaderEnd;
 	// http auth
 	bool useBasicHTTPAuth;
 	char httpAuthUsername[64];
@@ -112,7 +112,7 @@ typedef struct
 }jsonRpcClient_t;
 
 // server
-jsonRpcServer_t* jsonRpc_createServer(uint16 port);
+jsonRpcServer_t* jsonRpc_createServer(uint16_t port);
 int jsonRpc_run(jsonRpcServer_t* jrs);
 void jsonRpc_sendResponse(jsonRpcServer_t* jrs, jsonRpcClient_t* client, jsonObject_t* jsonObjectReturnValue);
 void jsonRpc_sendResponseRaw(jsonRpcServer_t* jrs, jsonRpcClient_t* client, fStr_t* fStr_responseRawData, char* additionalHeaderData);
@@ -120,25 +120,25 @@ void jsonRpc_sendFailedToAuthorize(jsonRpcServer_t* jrs, jsonRpcClient_t* client
 
 // object
 jsonObject_t* jsonObject_getParameter(jsonObject_t* jsonObject, char* name);
-uint32 jsonObject_getType(jsonObject_t* jsonObject);
-uint8* jsonObject_getStringData(jsonObject_t* jsonObject, uint32* length);
-uint32 jsonObject_getArraySize(jsonObject_t* jsonObject);
-jsonObject_t* jsonObject_getArrayElement(jsonObject_t* jsonObject, uint32 index);
+uint32_t jsonObject_getType(jsonObject_t* jsonObject);
+uint8_t* jsonObject_getStringData(jsonObject_t* jsonObject, uint32_t* length);
+uint32_t jsonObject_getArraySize(jsonObject_t* jsonObject);
+jsonObject_t* jsonObject_getArrayElement(jsonObject_t* jsonObject, uint32_t index);
 bool jsonObject_isTrue(jsonObject_t* jsonObject);
 double jsonObject_getNumberValueAsDouble(jsonObject_t* jsonObject);
-sint32 jsonObject_getNumberValueAsS32(jsonObject_t* jsonObject);
-uint32 jsonObject_getNumberValueAsU32(jsonObject_t* jsonObject);
+int32_t jsonObject_getNumberValueAsS32(jsonObject_t* jsonObject);
+uint32_t jsonObject_getNumberValueAsU32(jsonObject_t* jsonObject);
 
 // object deallocation
-void jsonObject_freeStringData(uint8* stringBuffer);
+void jsonObject_freeStringData(uint8_t* stringBuffer);
 void jsonObject_freeObject(jsonObject_t* jsonObject);
 
 // builder
 void jsonBuilder_buildObjectString(fStr_t* fStr_output, jsonObject_t* jsonObject);
 
 // client
-jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, fStr_t* fStr_parameterData, sint32* errorCode);
+jsonObject_t* jsonClient_request(jsonRequestTarget_t* server, char* methodName, fStr_t* fStr_parameterData, int32_t* errorCode);
 
 // base64
 int base64_encode(unsigned char const* bytes_to_encode, unsigned int in_len, char* output);
-unsigned char * base64_decode(const unsigned char *src, size_t len, uint8* out, sint32 *out_len);
+unsigned char * base64_decode(const unsigned char *src, size_t len, uint8_t* out, int32_t *out_len);

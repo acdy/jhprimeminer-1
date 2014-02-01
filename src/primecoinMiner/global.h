@@ -1,3 +1,19 @@
+#ifdef _MSC_VER
+#define _CRT_SECURE_NO_WARNINGS
+#define _CRT_SECURE_NO_DEPRECATE
+#pragma warning (push)
+#pragma warning ( disable : 4800 4244 )
+#endif
+
+#include "mpirxx.h"
+#include "mpir.h"
+
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
+
+#include "inttype.h"
+
 #include <algorithm>
 
 #ifdef _WIN32
@@ -5,25 +21,6 @@
 #pragma comment(lib,"Ws2_32.lib")
 #include<Winsock2.h>
 #include<ws2tcpip.h>
-typedef __int64           sint64;
-typedef unsigned __int64  uint64;
-typedef __int32           sint32;
-typedef unsigned __int32  uint32;
-typedef __int16           sint16;
-typedef unsigned __int16  uint16;
-typedef __int8            sint8;
-typedef unsigned __int8   uint8;
-
-typedef __int8 int8_t;
-typedef unsigned __int8 uint8_t;
-typedef __int16 int16_t;
-typedef unsigned __int16 uint16_t;
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef __int64 int64_t;
-typedef unsigned __int64 uint64_t;
-#include "mpirxx.h"
-#include "mpir.h"
 
 #else
 #include <sys/types.h>
@@ -47,20 +44,19 @@ typedef uint32_t DWORD;
 #include <gmpxx.h>
 #include <gmp.h>
 #endif
+
 #include"jhlib/JHLib.h"
 
-#include<stdio.h>
-#include<time.h>
-#include<set>
-#include<stdint.h>
+#include <stdio.h>
+#include <time.h>
+#include <set>
 #include <iomanip>
 
-#include"sha256.h"
-#include"ripemd160.h"
-//#include"bignum_custom.h"
+#include "sha256.h"
+#include "ripemd160.h"
 static const int PROTOCOL_VERSION = 70001;
 
-#include<openssl/bn.h>
+#include <openssl/bn.h>
 
 // our own improved versions of BN functions
 BIGNUM *BN2_mod_inverse(BIGNUM *in,	const BIGNUM *a, const BIGNUM *n, BN_CTX *ctx);
@@ -79,26 +75,19 @@ int BN2_uadd(BIGNUM *r, const BIGNUM *a, const BIGNUM *b);
 
 // original primecoin BN stuff
 #include"uint256.h"
+
+#ifdef _MSC_VER
+#pragma warning( push )
+#pragma warning( disable: 4244 4267 )
+#endif
 #include"bignum2.h"
+#ifdef _MSC_VER
+#pragma warning( pop )
+#endif
+
 #include"prime.h"
 #include"jsonrpc.h"
 
-#include "mpirxx.h"
-#include "mpir.h"
-#ifndef _MSC_VER == 1500
-#include<stdint.h>
-#else
-// stdint.h not present in vs2008, use these defines instead:
-typedef signed char int8_t;
-typedef short int int16_t;
-typedef int int32_t;
-typedef __int64 int64_t;
-
-typedef unsigned char uint8_t;
-typedef unsigned short int uint16_t;
-typedef unsigned int uint32_t;
-typedef unsigned __int64 uint64_t;
-#endif
 #include"xptServer.h"
 #include"xptClient.h"
 
@@ -131,9 +120,9 @@ static inline void swap32yes(void*out, const void*in, size_t sz) {
 #define swap32tobe(out, in, sz)  swap32yes(out, in, sz)
 
 
-static inline float GetChainDifficulty(unsigned int nChainLength)
+static inline float GetChainDifficulty(double nChainLength)
 {
-	return (float)nChainLength / 16777216.0;
+	return (float)(nChainLength / 16777216.0);
 }
 
 
@@ -158,14 +147,14 @@ std::string HexStr(const T itbegin, const T itend, bool fSpaces=false)
 
 typedef struct  
 {
-	/* +0x00 */ uint32 seed;
-	/* +0x04 */ uint32 nBitsForShare;
-	/* +0x08 */ uint32 blockHeight;
-	/* +0x0C */ uint32 padding1;
-	/* +0x10 */ uint32 padding2;
-	/* +0x14 */ uint32 client_shareBits; // difficulty score of found share (the client is allowed to modify this value, but not the others)
-	/* +0x18 */ uint32 serverStuff1;
-	/* +0x1C */ uint32 serverStuff2;
+	/* +0x00 */ uint32_t seed;
+	/* +0x04 */ uint32_t nBitsForShare;
+	/* +0x08 */ uint32_t blockHeight;
+	/* +0x0C */ uint32_t padding1;
+	/* +0x10 */ uint32_t padding2;
+	/* +0x14 */ uint32_t client_shareBits; // difficulty score of found share (the client is allowed to modify this value, but not the others)
+	/* +0x18 */ uint32_t serverStuff1;
+	/* +0x1C */ uint32_t serverStuff2;
 }serverData_t;
 
 typedef struct  
@@ -196,15 +185,15 @@ typedef struct
 
 	// since we can generate many (useless) primes ultra fast if we simply set sieve size low, 
 	// its better if we only count primes with at least a given difficulty
-	//volatile uint32 qualityPrimesFound;
-	volatile uint32 bestPrimeChainDifficulty;
+	//volatile uint32_t qualityPrimesFound;
+	volatile uint32_t bestPrimeChainDifficulty;
 	volatile double bestPrimeChainDifficultySinceLaunch;
-  uint64 primeLastUpdate;
-  uint64 startTime;
-uint64 blockStartTime;
+	time_t primeLastUpdate;
+	time_t startTime;
+	time_t blockStartTime;
 	bool shareFound;
 	bool shareRejected;
-	volatile unsigned int nL1CacheElements;
+	volatile uint32_t nL1CacheElements;
 
 }primeStats_t;
 
@@ -214,33 +203,33 @@ extern bool bSoloMining;
 
 typedef struct  
 {
-	uint32	version;
-	uint8	prevBlockHash[32];
-	uint8	merkleRoot[32];
-	uint32	timestamp;
-	uint32	nBits;
-	uint32	nonce;
+	uint32_t	version;
+	uint8_t	prevBlockHash[32];
+	uint8_t	merkleRoot[32];
+	uint32_t	timestamp;
+	uint32_t	nBits;
+	uint32_t	nonce;
 	// GetHeaderHash() goes up to this offset (4+32+32+4+4+4=80 bytes)
 	uint256 blockHeaderHash;
 	//CBigNum bnPrimeChainMultiplierBN; unused
 	mpz_class mpzPrimeChainMultiplier;
 	// other
 	serverData_t serverData;
-	uint32 threadIndex; // the index of the miner thread
+	uint32_t threadIndex; // the index of the miner thread
 	bool xptMode;
 	// getblocktemplate data
-	uint32 seed;
+	uint32_t seed;
 }primecoinBlock_t;
 
 
 struct blockHeader_t {
-  uint32	version;            //4(0)
+  uint32_t	version;            //4(0)
   uint256	prevBlockHash;      //32(4)
   uint256	merkleRoot;			//32(36)
-  uint32	timestamp;          //4(68)
-  uint32	nBits;              //4(72)
-  uint32	nonce;              //4(76)
-  uint8		primeMultiplier[48];//48(80)
+  uint32_t	timestamp;          //4(68)
+  uint32_t	nBits;              //4(72)
+  uint32_t	nonce;              //4(76)
+  uint8_t   primeMultiplier[48];//48(80)
 };                                   
 
 
@@ -248,13 +237,13 @@ extern jsonRequestTarget_t jsonRequestTarget; // rpc login data
 
 // prototypes from main.cpp
 bool error(const char *format, ...);
-bool jhMiner_pushShare_primecoin(uint8 data[256], primecoinBlock_t* primecoinBlock);
+bool jhMiner_pushShare_primecoin(uint8_t data[256], primecoinBlock_t* primecoinBlock);
 bool SubmitBlock(primecoinBlock_t* pcBlock);
-void primecoinBlock_generateHeaderHash(primecoinBlock_t* primecoinBlock, uint8 hashOutput[32]);
-uint32 _swapEndianessU32(uint32 v);
-uint32 jhMiner_getCurrentWorkBlockHeight(sint32 threadIndex);
+void primecoinBlock_generateHeaderHash(primecoinBlock_t* primecoinBlock, uint8_t hashOutput[32]);
+uint32_t _swapEndianessU32(uint32_t v);
+uint32_t jhMiner_getCurrentWorkBlockHeight(int32_t threadIndex);
 
-bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psieve, const sint32 threadIndex, const unsigned int nonceStep);
+bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psieve, const int32_t threadIndex, const unsigned int nonceStep);
 
 // direct access to share counters
 extern volatile int total_shares;
@@ -283,4 +272,7 @@ static inline uint32_t le32dec(const void *pp)
 
 
 #include"transaction.h"
-uint64 jhMiner_primeCoin_targetGetMint(unsigned int nBits);
+
+uint64_t jhMiner_primeCoin_targetGetMint(unsigned int nBits);
+
+#include"ticker.h"

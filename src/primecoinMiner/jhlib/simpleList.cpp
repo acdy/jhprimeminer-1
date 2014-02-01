@@ -3,7 +3,7 @@
 
 // malloc can be a real performance eater - thus introduce 'the simpleList cache' which caches up to 1000 lists and 1000 32-entry buffers
 
-simpleList_t* simpleList_create(sint32 initialLimit)
+simpleList_t* simpleList_create(int32_t initialLimit)
 {
 	simpleList_t* simpleList = (simpleList_t*)malloc(sizeof(simpleList_t));
 	memset(simpleList, 0, sizeof(simpleList_t));
@@ -16,7 +16,7 @@ simpleList_t* simpleList_create(sint32 initialLimit)
 	return simpleList;
 }
 
-void simpleList_create(simpleList_t* simpleList, sint32 initialLimit)
+void simpleList_create(simpleList_t* simpleList, int32_t initialLimit)
 {
 	memset(simpleList, 0, sizeof(simpleList_t));
 	if( initialLimit == 0 ) initialLimit = 4;
@@ -26,7 +26,7 @@ void simpleList_create(simpleList_t* simpleList, sint32 initialLimit)
 	simpleList->stepScaler = 1;
 }
 
-void simpleList_create(simpleList_t* simpleList, sint32 initialLimit, void** rawArray)
+void simpleList_create(simpleList_t* simpleList, int32_t initialLimit, void** rawArray)
 {
 	memset(simpleList, 0, sizeof(simpleList_t));
 	if( initialLimit == 0 ) initialLimit = 4;
@@ -69,7 +69,7 @@ void simpleList_add(simpleList_t* simpleList, void* object) // todo: Via define 
 // does not add the object if it is already in the list
 void simpleList_addUnique(simpleList_t* simpleList, void* object)
 {
-	for(uint32 i=0; i<simpleList->objectCount; i++)
+	for(uint32_t i=0; i<simpleList->objectCount; i++)
 	{
 		if( simpleList->objects[i] == object )
 			return;
@@ -95,7 +95,7 @@ void simpleList_addUnique(simpleList_t* simpleList, void* object)
 // does not add the object if it is already in the list and returns true if it was added
 bool simpleList_addUniqueFeedback(simpleList_t* simpleList, void* object)
 {
-	for(uint32 i=0; i<simpleList->objectCount; i++)
+	for(uint32_t i=0; i<simpleList->objectCount; i++)
 	{
 		if( simpleList->objects[i] == object )
 			return false;
@@ -122,7 +122,7 @@ bool simpleList_addUniqueFeedback(simpleList_t* simpleList, void* object)
 // Never call _remove while parsing through the list!
 bool simpleList_remove(simpleList_t* simpleList, void* object)
 {
-	for(uint32 i=0; i<simpleList->objectCount; i++)
+	for(uint32_t i=0; i<simpleList->objectCount; i++)
 	{
 		if( simpleList->objects[i] == object )
 		{
@@ -135,7 +135,7 @@ bool simpleList_remove(simpleList_t* simpleList, void* object)
 }
 
 // this function does not check boundaries!
-void* simpleList_get(simpleList_t* simpleList, sint32 index)
+void* simpleList_get(simpleList_t* simpleList, int32_t index)
 {
 	return simpleList->objects[index];
 }
@@ -144,16 +144,16 @@ void* simpleList_get(simpleList_t* simpleList, sint32 index)
 /*                         Cached list                                  */
 /************************************************************************/
 
-objectCreatorCache_t* simpleListCached_createCache(uint32 listCountPerBlock, uint32 initialEntryCount)
+objectCreatorCache_t* simpleListCached_createCache(uint32_t listCountPerBlock, uint32_t initialEntryCount)
 {
-	return objectCreatorCache_create(sizeof(simpleListCached_t) + initialEntryCount * sizeof(uint32), listCountPerBlock, 1, 0);
+	return objectCreatorCache_create(sizeof(simpleListCached_t) + initialEntryCount * sizeof(uint32_t), listCountPerBlock, 1, 0);
 }
 
 simpleListCached_t* simpleListCached_create(objectCreatorCache_t* objectCreatorCache)
 {
 	simpleListCached_t* simpleListCached = (simpleListCached_t*)objectCreatorCache_getNext(objectCreatorCache);
 	
-	uint32 objectLimit = (objectCreatorCache->objectSize - sizeof(simpleListCached_t)) / 4;
+	uint32_t objectLimit = (objectCreatorCache->objectSize - sizeof(simpleListCached_t)) / 4;
 	//if( initialLimit == 0 ) initialLimit = 4;
 	simpleListCached->objectLimit = objectLimit;
 	simpleListCached->objects = (void**)(simpleListCached+1);
@@ -192,7 +192,7 @@ void simpleListCached_add(simpleListCached_t* simpleListCached, void* object) //
 // does not add the object if it is already in the list
 void simpleListCached_addUnique(simpleListCached_t* simpleListCached, void* object)
 {
-	for(uint32 i=0; i<simpleListCached->objectCount; i++)
+	for(uint32_t i=0; i<simpleListCached->objectCount; i++)
 	{
 		if( simpleListCached->objects[i] == object )
 			return;
@@ -218,7 +218,7 @@ void simpleListCached_addUnique(simpleListCached_t* simpleListCached, void* obje
 // does not add the object if it is already in the list and returns true if it was added
 bool simpleListCached_addUniqueFeedback(simpleListCached_t* simpleListCached, void* object)
 {
-	for(uint32 i=0; i<simpleListCached->objectCount; i++)
+	for(uint32_t i=0; i<simpleListCached->objectCount; i++)
 	{
 		if( simpleListCached->objects[i] == object )
 			return false;
@@ -245,7 +245,7 @@ bool simpleListCached_addUniqueFeedback(simpleListCached_t* simpleListCached, vo
 // Never call _remove while parsing through the list!
 bool simpleListCached_remove(simpleListCached_t* simpleListCached, void* object)
 {
-	for(uint32 i=0; i<simpleListCached->objectCount; i++)
+	for(uint32_t i=0; i<simpleListCached->objectCount; i++)
 	{
 		if( simpleListCached->objects[i] == object )
 		{
@@ -258,7 +258,7 @@ bool simpleListCached_remove(simpleListCached_t* simpleListCached, void* object)
 }
 
 // this function does not check boundaries!
-void* simpleListCached_get(simpleListCached_t* simpleListCached, sint32 index)
+void* simpleListCached_get(simpleListCached_t* simpleListCached, int32_t index)
 {
 	return simpleListCached->objects[index];
 }
@@ -273,7 +273,7 @@ void* simpleListCached_get(simpleListCached_t* simpleListCached, sint32 index)
  * It can lead to very high speed boosts when a lot of objects (over 1000) have to be allocated
  * The downside is that the memory has to be allocated in advance
  */
-objectCreatorCache_t* objectCreatorCache_create(uint32 objectSize, uint32 initialEntryCount, uint32 stepScale, uint32 stepAdd)
+objectCreatorCache_t* objectCreatorCache_create(uint32_t objectSize, uint32_t initialEntryCount, uint32_t stepScale, uint32_t stepAdd)
 {
 	if( initialEntryCount == 0 )
 #ifdef _WIN32
@@ -290,7 +290,7 @@ objectCreatorCache_t* objectCreatorCache_create(uint32 objectSize, uint32 initia
 	objectCreatorCache->currentCacheStepAdd = stepAdd;
 	objectCreatorCache->objectSize = objectSize;
 	objectCreatorCache->dataBlocks = simpleList_create(16);
-	objectCreatorCache->currentEmitPointer = (uint8*)malloc(objectCreatorCache->objectSize * objectCreatorCache->currentCacheCount);
+	objectCreatorCache->currentEmitPointer = (uint8_t*)malloc(objectCreatorCache->objectSize * objectCreatorCache->currentCacheCount);
 	objectCreatorCache->endEmitPointer = objectCreatorCache->currentEmitPointer + (objectCreatorCache->objectSize * objectCreatorCache->currentCacheCount);
 	memset(objectCreatorCache->currentEmitPointer, 0, objectCreatorCache->objectSize * objectCreatorCache->currentCacheCount);
 	simpleList_add(objectCreatorCache->dataBlocks, objectCreatorCache->currentEmitPointer);
@@ -310,7 +310,7 @@ void* objectCreatorCache_getNext(objectCreatorCache_t* objectCreatorCache)
 	// allocate new cache block
 	objectCreatorCache->currentCacheCount += objectCreatorCache->currentCacheStep;
 	objectCreatorCache->currentCacheStep =  objectCreatorCache->currentCacheStep * objectCreatorCache->currentCacheStepMult + objectCreatorCache->currentCacheStepAdd;
-	objectCreatorCache->currentEmitPointer = (uint8*)malloc(objectCreatorCache->objectSize * objectCreatorCache->currentCacheCount);
+	objectCreatorCache->currentEmitPointer = (uint8_t*)malloc(objectCreatorCache->objectSize * objectCreatorCache->currentCacheCount);
 	objectCreatorCache->endEmitPointer = objectCreatorCache->currentEmitPointer + (objectCreatorCache->objectSize * objectCreatorCache->currentCacheCount);
 	memset(objectCreatorCache->currentEmitPointer, 0, objectCreatorCache->objectSize * objectCreatorCache->currentCacheCount);
 	simpleList_add(objectCreatorCache->dataBlocks, objectCreatorCache->currentEmitPointer);
@@ -324,7 +324,7 @@ void* objectCreatorCache_getNext(objectCreatorCache_t* objectCreatorCache)
  */
 void objectCreatorCache_freeAll(objectCreatorCache_t* objectCreatorCache)
 {
-	for(uint32 i=0; i<objectCreatorCache->dataBlocks->objectCount; i++)
+	for(uint32_t i=0; i<objectCreatorCache->dataBlocks->objectCount; i++)
 		free(objectCreatorCache->dataBlocks->objects[i]);
 	simpleList_free(objectCreatorCache->dataBlocks);
 	free(objectCreatorCache);

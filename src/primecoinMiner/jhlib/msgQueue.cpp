@@ -12,7 +12,7 @@ typedef struct
     pthread_mutex_t criticalSection;
 #endif
 	hashTable_t ht_msgQueues;
-	uint32 uniqueNameCounter;
+	uint32_t uniqueNameCounter;
 }messageQueueEnvironment_t;
 
 messageQueueEnvironment_t messageQueueEnvironment;
@@ -37,9 +37,9 @@ void msgQueue_init()
  * Creates an unconfigured and non-active message queue.
  */
 #ifdef _WIN32
-msgQueue_t* msgQueue_create(sint32 nameId, void (JHCALLBACK *messageProc)(msgQueue_t *msgQueue, sint32 msgId, uint32 param1, uint32 param2, void* data))
+msgQueue_t* msgQueue_create(int32_t nameId, void (JHCALLBACK *messageProc)(msgQueue_t *msgQueue, int32_t msgId, uint32_t param1, uint32_t param2, void* data))
 #else
-msgQueue_t* msgQueue_create(sint32 nameId, void *messageProc(msgQueue_t *msgQueue, sint32 msgId, uint32 param1, uint32 param2, void* data))
+msgQueue_t* msgQueue_create(int32_t nameId, void *messageProc(msgQueue_t *msgQueue, int32_t msgId, uint32_t param1, uint32_t param2, void* data))
 #endif
 {
 	msgQueue_t *msgQueue = (msgQueue_t*)malloc(sizeof(msgQueue_t));
@@ -74,10 +74,10 @@ msgQueue_t* msgQueue_create(sint32 nameId, void *messageProc(msgQueue_t *msgQueu
  * Generated nameIds are always negative
  * Returns 0 on error
  */
-sint32 msgQueue_generateUniqueNameId()
+int32_t msgQueue_generateUniqueNameId()
 {
 	//EnterCriticalSection(&messageQueueEnvironment.criticalSection);
-	//for(sint32 i=-1; i>-100000; i--)
+	//for(int32_t i=-1; i>-100000; i--)
 	//{
 	//	if( hashTable_get(&messageQueueEnvironment.ht_msgQueues, i) == NULL )
 	//	{
@@ -87,7 +87,7 @@ sint32 msgQueue_generateUniqueNameId()
 	//}
 	//LeaveCriticalSection(&messageQueueEnvironment.criticalSection);
 	//return 0;
-	uint32 name = 0;
+	uint32_t name = 0;
 #ifdef _WIN32
 	EnterCriticalSection(&messageQueueEnvironment.criticalSection);
 	name = messageQueueEnvironment.uniqueNameCounter;
@@ -122,7 +122,7 @@ void msgQueue_activate(msgQueue_t* msgQueue)
  * Should enable the queue to only receive or block certain messages
  * maybe in future..
  */
-//void msgQueue_registerFilter(messageQueue_t* msgQueue, sint32 msgId)
+//void msgQueue_registerFilter(messageQueue_t* msgQueue, int32_t msgId)
 //{
 //}
 
@@ -198,7 +198,7 @@ bool msgQueue_check(msgQueue_t* msgQueue)
 
 #define MSGQUEUE_ALL	0x7FFFFFFF
 
-bool msgQueue_postMessage(sint32 destNameId, sint32 msgId, uint32 param1, uint32 param2, void* data)
+bool msgQueue_postMessage(int32_t destNameId, int32_t msgId, uint32_t param1, uint32_t param2, void* data)
 {
 	if( destNameId == MSGQUEUE_ALL )
 	{

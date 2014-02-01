@@ -29,16 +29,16 @@ SOCKET jsonRpc_openConnection(char *ip, int Port)
 void jsonRpc_processRequest(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 {
 	char* requestData = (char*)(client->recvBuffer+client->recvDataHeaderEnd);
-	sint32 requestLength = (sint32)(client->recvDataSizeFull - client->recvDataHeaderEnd);
+	int32_t requestLength = (int32_t)(client->recvDataSizeFull - client->recvDataHeaderEnd);
 	// parse data
 	//jsonParser_parse(requestData, requestLength);
-	jsonObject_t* jsonObject = jsonParser_parse((uint8*)requestData, requestLength);
+	jsonObject_t* jsonObject = jsonParser_parse((uint8_t*)requestData, requestLength);
 	// get method
 	jsonObject_t* jsonMethodName = jsonObject_getParameter(jsonObject, "method");
 //	jsonObject_t* jsonParameter = jsonObject_getParameter(jsonObject, "params");  unused?
 
-	uint32 methodNameLength = 0;
-	uint8* methodNameString = jsonObject_getStringData(jsonMethodName, &methodNameLength);
+	uint32_t methodNameLength = 0;
+	uint8_t* methodNameString = jsonObject_getStringData(jsonMethodName, &methodNameLength);
 	if( methodNameString )
 	{
 		if( methodNameLength == 7 && memcmp(methodNameString, "getwork", 7) == 0 )
@@ -48,7 +48,7 @@ void jsonRpc_processRequest(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 		else
 		{
 			printf("JSON-RPC: Unknown method to call - ");
-			for(uint32 i=0; i<methodNameLength; i++)
+			for(uint32_t i=0; i<methodNameLength; i++)
 			{
 				printf("%c", methodNameString[i]);
 			}
@@ -83,7 +83,7 @@ void jsonRpc_processRequest(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
  * port is the port identifier that is used for incoming connections
  * Returns NULL if the socket could not be created (most likely due to port being blocked)
  */
-jsonRpcServer_t* jsonRpc_createServer(uint16 port)
+jsonRpcServer_t* jsonRpc_createServer(uint16_t port)
 {
 	jsonRpcServer_t* jr = (jsonRpcServer_t*)malloc(sizeof(jsonRpcServer_t));
 	memset(jr, 0, sizeof(jsonRpcServer_t));
@@ -139,7 +139,7 @@ void jsonRpcServer_newClient(jsonRpcServer_t* jrs, SOCKET s)
 	// init recv buffer
 	client->recvIndex = 0;
 	client->recvSize = JSON_INITIAL_RECV_BUFFER_SIZE;
-	client->recvBuffer = (uint8*)malloc(JSON_INITIAL_RECV_BUFFER_SIZE);
+	client->recvBuffer = (uint8_t*)malloc(JSON_INITIAL_RECV_BUFFER_SIZE);
 	// add to client list
 	simpleList_add(jrs->list_connections, client);
 }
@@ -150,7 +150,7 @@ void jsonRpcServer_newClient(jsonRpcServer_t* jrs, SOCKET s)
  */
 bool jsonRpcServer_receiveData(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 {
-	uint32 remainingRecvSize = client->recvSize - client->recvIndex;
+	uint32_t remainingRecvSize = client->recvSize - client->recvIndex;
 	if( remainingRecvSize == 0 )
 	{
 		// not enough data storage left
@@ -158,7 +158,7 @@ bool jsonRpcServer_receiveData(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 		if( client->recvSize < JSON_MAX_RECV_BUFFER_SIZE )
 		{
 			client->recvSize = std::min<unsigned long>(client->recvSize*2, JSON_MAX_RECV_BUFFER_SIZE); // double buffer size
-			client->recvBuffer = (uint8*)realloc(client->recvBuffer, client->recvSize);
+			client->recvBuffer = (uint8_t*)realloc(client->recvBuffer, client->recvSize);
 			// recalculate remaining buffer storage
 			remainingRecvSize = client->recvSize - client->recvIndex;
 		}
@@ -177,7 +177,7 @@ bool jsonRpcServer_receiveData(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 		}
 	}
 	// recv
-	sint32 r = recv(client->clientSocket, (char*)(client->recvBuffer+client->recvIndex), remainingRecvSize, 0);
+	int32_t r = recv(client->clientSocket, (char*)(client->recvBuffer+client->recvIndex), remainingRecvSize, 0);
 	if( r <= 0 )
 	{
 #ifdef _WIN32
@@ -195,11 +195,11 @@ bool jsonRpcServer_receiveData(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 		if( client->recvDataHeaderEnd == 0 )
 		{
 			// did we receive the end of the header already?
-			sint32 scanStart = (sint32)client->recvIndex - (sint32)r;
+			int32_t scanStart = (int32_t)client->recvIndex - (int32_t)r;
 			scanStart = std::max(scanStart-8, 0);
-			sint32 scanEnd = (sint32)(client->recvIndex);
+			int32_t scanEnd = (int32_t)(client->recvIndex);
 			scanEnd = std::max(scanEnd-4, 0);
-			for(sint32 s=scanStart; s<=scanEnd; s++)
+			for(int32_t s=scanStart; s<=scanEnd; s++)
 			{
 				// is header end?
 				if( client->recvBuffer[s+0] == '\r' &&
@@ -225,7 +225,7 @@ bool jsonRpcServer_receiveData(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 					// *) the 4 bytes at the end will always be \r\n\r\n
 					char* endOfHeaderPtr = (char*)(client->recvBuffer+s);
 					char* parsePtr = (char*)client->recvBuffer;
-					sint32 contentLength = -1;
+					int32_t contentLength = -1;
 					while( parsePtr < endOfHeaderPtr )
 					{
 						// is content-length parameter?
@@ -245,8 +245,8 @@ bool jsonRpcServer_receiveData(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 						{
 							// auth parameter found
 							char* base64EncodedLogin = (char*)(parsePtr+21);
-							uint8 httpLoginRaw[256];
-							sint32 decodedLen = 0;
+							uint8_t httpLoginRaw[256];
+							int32_t decodedLen = 0;
 							base64_decode((const unsigned char*)base64EncodedLogin, strstr(base64EncodedLogin, "\r\n")-base64EncodedLogin, httpLoginRaw, &decodedLen);
 							// make sure the httpLoginRaw string is null-terminated...
 							httpLoginRaw[255] = '\0';
@@ -301,7 +301,7 @@ bool jsonRpcServer_receiveData(jsonRpcServer_t* jrs, jsonRpcClient_t* client)
 			jsonRpc_processRequest(jrs, client);
 			// wipe processed packet and shift remaining data back
 			client->recvDataHeaderEnd = 0;
-//			uint32 pRecvIndex = client->recvIndex;   unused?
+//			uint32_t pRecvIndex = client->recvIndex;   unused?
 			client->recvIndex -= client->recvDataSizeFull;
 			client->recvDataSizeFull = 0;
 			if( client->recvIndex > 0 )
@@ -342,13 +342,13 @@ int jsonRpc_run(jsonRpcServer_t* jrs)
 		// add server accept socket
 		FD_SET(jrs->acceptSocket, &fd);
 		// add all connected sockets
-		for(uint32 i=0; i<jrs->list_connections->objectCount; i++)
+		for(uint32_t i=0; i<jrs->list_connections->objectCount; i++)
 		{
 			jsonRpcClient_t* client = (jsonRpcClient_t*)simpleList_get(jrs->list_connections, i);
 			FD_SET(client->clientSocket, &fd);
 		}
 		// check for socket events
-		sint32 r = select(0, &fd, 0, 0, &sTimeout); // wait one second
+		int32_t r = select(0, &fd, 0, 0, &sTimeout); // wait one second
 		if( r )
 		{
 			// check for new connections
@@ -357,7 +357,7 @@ int jsonRpc_run(jsonRpcServer_t* jrs)
 				jsonRpcServer_newClient(jrs, accept(jrs->acceptSocket, 0, 0));
 			}
 			// check for client data received
-			for(uint32 i=0; i<jrs->list_connections->objectCount; i++)
+			for(uint32_t i=0; i<jrs->list_connections->objectCount; i++)
 			{
 				jsonRpcClient_t* client = (jsonRpcClient_t*)simpleList_get(jrs->list_connections, i);
 				if( FD_ISSET(client->clientSocket, &fd) )

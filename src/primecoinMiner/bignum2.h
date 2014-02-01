@@ -10,7 +10,7 @@
 #include <openssl/bn.h>
 
 #include <algorithm>
-// #include "util.h" // for uint64
+// #include "util.h" // for uint64_t
 
 /** Errors thrown by the bignum class */
 class bignum_error : public std::runtime_error
@@ -53,7 +53,7 @@ public:
 /** C++ wrapper for BIGNUM (OpenSSL bignum) */
 class CBigNum : public BIGNUM
 {
-	//uint8 bignumStackData[0x200];
+	//uint8_t bignumStackData[0x200];
 public:
 
 	void BN_initX()
@@ -109,12 +109,12 @@ public:
 	CBigNum(short n)            { BN_initX(); if (n >= 0) setulong(n); else setint64(n); }
 	CBigNum(int n)              { BN_initX(); if (n >= 0) setulong(n); else setint64(n); }
 //	CBigNum(long n)             { BN_initX(); if (n >= 0) setulong(n); else setint64(n); }
-	CBigNum(sint64 n)            { BN_initX(); setint64(n); }
+	CBigNum(int64_t n)            { BN_initX(); setint64(n); }
 	CBigNum(unsigned char n)    { BN_initX(); setulong(n); }
 	CBigNum(unsigned short n)   { BN_initX(); setulong(n); }
 	CBigNum(unsigned int n)     { BN_initX(); setulong(n); }
 //	CBigNum(unsigned long n)    { BN_initX(); setulong(n); }
-	CBigNum(uint64 n)           { BN_initX(); setuint64(n); }
+	CBigNum(uint64_t n)           { BN_initX(); setuint64(n); }
 	explicit CBigNum(uint256 n) { BN_initX(); setuint256(n); }
 	
 	CBigNum(char* n)
@@ -159,14 +159,14 @@ public:
 			return (n > (unsigned long)0x7FFFFFFF ? (signed int)0x80000000 : -(int)n);
 	}
 
-	void setint64(sint64 sn)
+	void setint64(int64_t sn)
 	{
 		unsigned char pch[sizeof(sn) + 6];
 		unsigned char* p = pch + 4;
 		bool fNegative;
-		uint64 n;
+		uint64_t n;
 
-		if (sn < (sint64)0)
+		if (sn < (int64_t)0)
 		{
 			// Since the minimum signed integer cannot be represented as positive so long as its type is signed, 
 			// and it's not well-defined what happens if you make it unsigned before negating it,
@@ -204,7 +204,7 @@ public:
 		BN_mpi2bn(pch, p - pch, this);
 	}
 
-	void setuint64(uint64 n)
+	void setuint64(uint64_t n)
 	{
 		unsigned char pch[sizeof(n) + 6];
 		unsigned char* p = pch + 4;

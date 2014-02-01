@@ -29,7 +29,7 @@ stream_t *fileMgr_openWriteable(char *name);
 //unsigned int fileMgr_readU32(file_t *file);
 //unsigned long long fileMgr_readU64(file_t *file);
 //float fileMgr_readFloat(file_t *file);
-//uint32 fileMgr_readData(file_t *file, void *data, int len);
+//uint32_t fileMgr_readData(file_t *file, void *data, int len);
 
 //char *fileMgr_readLine(file_t *file);
 

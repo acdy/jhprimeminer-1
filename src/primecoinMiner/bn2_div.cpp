@@ -80,11 +80,11 @@ int BN2_div(BIGNUM *dv, BIGNUM *rm, const BIGNUM *num, const BIGNUM *divisor)
 
 
 
-	uint32 bignumData_d1[0x200/4];
-	uint32 bignumData_d2[0x200/4];
-	uint32 bignumData_d3[0x200/4];
-	uint32 bignumData_d4[0x200/4];
-	//uint32 bignumData_d5[0x200/4];
+	uint32_t bignumData_d1[0x200/4];
+	uint32_t bignumData_d2[0x200/4];
+	uint32_t bignumData_d3[0x200/4];
+	uint32_t bignumData_d4[0x200/4];
+	//uint32_t bignumData_d5[0x200/4];
 	BIGNUM bn_d1;
 	BIGNUM bn_d2;
 	BIGNUM bn_d3;

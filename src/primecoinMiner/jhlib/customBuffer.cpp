@@ -1,7 +1,7 @@
 #include"./JHLib.h"
 #include <cstdlib>
 
-customBuffer_t* customBuffer_create(sint32 initialLimit, uint32 objectSize)
+customBuffer_t* customBuffer_create(int32_t initialLimit, uint32_t objectSize)
 {
 	customBuffer_t* customBuffer = (customBuffer_t*)malloc(sizeof(customBuffer_t));
 	memset(customBuffer, 0, sizeof(customBuffer_t));
@@ -31,11 +31,11 @@ void customBuffer_add(customBuffer_t* customBuffer, void* data)
 		customBuffer->objectLimit += (customBuffer->objectLimit/2+1);
 		customBuffer->objects = (void**)realloc(customBuffer->objects, customBuffer->objectSize * customBuffer->objectLimit);
 	}
-	memcpy(((uint8*)customBuffer->objects)+customBuffer->objectCount*customBuffer->objectSize, data, customBuffer->objectSize);
+	memcpy(((uint8_t*)customBuffer->objects)+customBuffer->objectCount*customBuffer->objectSize, data, customBuffer->objectSize);
 	customBuffer->objectCount++;
 }
 
-void customBuffer_add(customBuffer_t* customBuffer, void* data, uint32 count)
+void customBuffer_add(customBuffer_t* customBuffer, void* data, uint32_t count)
 {
 	if( customBuffer == NULL )
 		return;
@@ -44,11 +44,11 @@ void customBuffer_add(customBuffer_t* customBuffer, void* data, uint32 count)
 		customBuffer->objectLimit += std::max(customBuffer->objectCount+count, (customBuffer->objectLimit/2+1));
 		customBuffer->objects = (void**)realloc(customBuffer->objects, customBuffer->objectSize * customBuffer->objectLimit);
 	}
-	memcpy(((uint8*)customBuffer->objects)+customBuffer->objectCount*customBuffer->objectSize, data, customBuffer->objectSize*count);
+	memcpy(((uint8_t*)customBuffer->objects)+customBuffer->objectCount*customBuffer->objectSize, data, customBuffer->objectSize*count);
 	customBuffer->objectCount += count;
 }
 
-void customBuffer_insert(customBuffer_t* customBuffer, sint32 insertIndex, void* data)
+void customBuffer_insert(customBuffer_t* customBuffer, int32_t insertIndex, void* data)
 {
 	if( customBuffer->objectCount == customBuffer->objectLimit )
 	{
@@ -57,23 +57,23 @@ void customBuffer_insert(customBuffer_t* customBuffer, sint32 insertIndex, void*
 		// todo: Insert can be optimized when realloc is used
 	}
 	// shift post-insert part
-	//uint32 insertByteIndex = insertIndex * customBuffer->objectSize; unused
-	for(sint32 i=(sint32)customBuffer->objectCount; i>=(sint32)insertIndex; i--)
+	//uint32_t insertByteIndex = insertIndex * customBuffer->objectSize; unused
+	for(int32_t i=(int32_t)customBuffer->objectCount; i>=(int32_t)insertIndex; i--)
 	{
-		memcpy(((uint8*)customBuffer->objects)+(i+1)*customBuffer->objectSize, ((uint8*)customBuffer->objects)+(i)*customBuffer->objectSize, customBuffer->objectSize);
+		memcpy(((uint8_t*)customBuffer->objects)+(i+1)*customBuffer->objectSize, ((uint8_t*)customBuffer->objects)+(i)*customBuffer->objectSize, customBuffer->objectSize);
 	}
-	memcpy(((uint8*)customBuffer->objects)+insertIndex*customBuffer->objectSize, data, customBuffer->objectSize);
+	memcpy(((uint8_t*)customBuffer->objects)+insertIndex*customBuffer->objectSize, data, customBuffer->objectSize);
 	customBuffer->objectCount += 1;
 }
 
-uint32 customBuffer_generateHash(customBuffer_t* customBuffer)
+uint32_t customBuffer_generateHash(customBuffer_t* customBuffer)
 {
-	uint32 hash = 0xF938B429;
-	uint32 size = customBuffer->objectCount * customBuffer->objectSize;
-	uint8* p = (uint8*)customBuffer->objects;
-	for(uint32 i=0; i<size; i++)
+	uint32_t hash = 0xF938B429;
+	uint32_t size = customBuffer->objectCount * customBuffer->objectSize;
+	uint8_t* p = (uint8_t*)customBuffer->objects;
+	for(uint32_t i=0; i<size; i++)
 	{
-		uint32 c = (uint32)p[i];
+		uint32_t c = (uint32_t)p[i];
 		hash ^= c;
 		hash = (hash<<3)|(hash>>(32-3));
 	}
@@ -84,18 +84,18 @@ uint32 customBuffer_generateHash(customBuffer_t* customBuffer)
  * Removes the item with the given index
  * Does not maintain order of the elements
  */
-void customBuffer_remove(customBuffer_t* customBuffer, uint32 removeIndex)
+void customBuffer_remove(customBuffer_t* customBuffer, uint32_t removeIndex)
 {
 	if( removeIndex >= customBuffer->objectCount )
 		return;
-	memcpy(((uint8*)customBuffer->objects)+removeIndex*customBuffer->objectSize, ((uint8*)customBuffer->objects)+(customBuffer->objectCount-1)*customBuffer->objectSize, customBuffer->objectSize);
+	memcpy(((uint8_t*)customBuffer->objects)+removeIndex*customBuffer->objectSize, ((uint8_t*)customBuffer->objects)+(customBuffer->objectCount-1)*customBuffer->objectSize, customBuffer->objectSize);
 	customBuffer->objectCount--;
 }
 
 // this function does not check boundaries!
-void* customBuffer_get(customBuffer_t* customBuffer, sint32 index)
+void* customBuffer_get(customBuffer_t* customBuffer, int32_t index)
 {
-	return (void*)(((uint8*)customBuffer->objects)+index*customBuffer->objectSize);
+	return (void*)(((uint8_t*)customBuffer->objects)+index*customBuffer->objectSize);
 }
 
 customBuffer_t* customBuffer_duplicate(customBuffer_t* customBufferSource)
