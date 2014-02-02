@@ -17,11 +17,11 @@ typedef unsigned long sieve_word_t;
 #endif
 
 //#include "main.h"
-#ifdef _WIN32
-#include "mpirxx.h"
-#else
-#include <gmpxx.h>
-#endif
+//#ifdef _WIN32
+//#include "mpirxx.h"
+//#else
+//#include <gmpxx.h>
+//#endif
 
 extern std::vector<unsigned int> vPrimes;
 static const unsigned int nMaxSieveExtensions = 20;

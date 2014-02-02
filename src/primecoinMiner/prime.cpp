@@ -1582,7 +1582,7 @@ bool CSieveOfEratosthenes::Weave()
          if (fUseLongForFixedMultiplier)
          {
             nFixedFactorCombinedMod = mpz_tdiv_ui(mpzHash.get_mpz_t(), nPrimeCombined);
-            nFixedFactorCombinedMod = (uint64_t)nFixedFactorCombinedMod * (nFixedMultiplier % nPrimeCombined) % nPrimeCombined;
+            nFixedFactorCombinedMod = nFixedFactorCombinedMod * (nFixedMultiplier % nPrimeCombined) % nPrimeCombined;
          }
          else
             nFixedFactorCombinedMod = mpz_tdiv_ui(mpzFixedFactor.get_mpz_t(), nPrimeCombined);

@@ -41,8 +41,6 @@ typedef uint32_t DWORD;
 #include <cstdio>
 #include <iostream>
 
-#include <gmpxx.h>
-#include <gmp.h>
 #endif
 
 #include"jhlib/JHLib.h"
