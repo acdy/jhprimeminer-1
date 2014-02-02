@@ -81,6 +81,49 @@ bool error(const char *format, ...)
 	return false;
 }
 
+void hexDump(char *desc, void *addr, int len) {
+	int i;
+	unsigned char buff[17];
+	unsigned char *pc = (unsigned char*)addr;
+
+	// Output description if given.
+	if (desc != NULL)
+		printf("%s:\n", desc);
+
+	// Process every byte in the data.
+	for (i = 0; i < len; i++) {
+		// Multiple of 16 means new line (with line offset).
+
+		if ((i % 16) == 0) {
+			// Just don't print ASCII for the zeroth line.
+			if (i != 0)
+				printf("  %s\n", buff);
+
+			// Output the offset.
+			printf("  %04x ", i);
+		}
+
+		// Now the hex code for the specific character.
+		printf(" %02x", pc[i]);
+
+		// And store a printable ASCII character for later.
+		if ((pc[i] < 0x20) || (pc[i] > 0x7e))
+			buff[i % 16] = '.';
+		else
+			buff[i % 16] = pc[i];
+		buff[(i % 16) + 1] = '\0';
+	}
+
+	// Pad out last line if not exactly 16 characters.
+	while ((i % 16) != 0) {
+		printf("   ");
+		i++;
+	}
+
+	// And print the final ASCII bit.
+	printf("  %s\n", buff);
+}
+
 
 bool hex2bin(unsigned char *p, const char *hexstr, size_t len)
 {
@@ -913,7 +956,7 @@ uint64_t jhMiner_primeCoin_targetGetMint(unsigned int nBits)
 /*
 * Worker thread mainloop for getblocktemplate mode
 */
-#ifdef __WIN32
+#ifdef _WIN32
 int jhMiner_workerThread_gbt(int threadIndex){
 #else
 void *jhMiner_workerThread_gbt(void *arg){ 
@@ -1032,7 +1075,7 @@ uint32_t threadIndex = static_cast<uint32_t>((uintptr_t)arg);
          break;
        }
       //JLR DBG
-      printf("Mining stopped after %dms\n", getTimeMilliseconds()-time1);
+      //printf("Mining stopped after %dms\n", getTimeMilliseconds()-time1);
       primecoinBlock.mpzPrimeChainMultiplier = 0;
    }
    if( psieve )
@@ -1490,13 +1533,14 @@ static void RoundSieveAutoTuningWorkerThread(bool bEnabled)
 
          float ratio = (float)(primeStats.nWaveTime == 0 ? 0 : ((float)primeStats.nWaveTime / (float)(primeStats.nWaveTime + primeStats.nTestTime)) * 100.0);
          //JLR DBG
+		 /*
          printf("\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\n");
          printf("WaveTime %u - Wave Round %u - L1CacheSize %u - TotalWaveTime: %u - TotalTestTime: %u - Ratio: %.01f / %.01f %%\n", 
           primeStats.nWaveRound == 0 ? 0 : primeStats.nWaveTime / primeStats.nWaveRound, primeStats.nWaveRound, primeStats.nL1CacheElements,
           primeStats.nWaveTime, primeStats.nTestTime, ratio, 100.0 - ratio);
          printf( "PrimorialMultiplier: %u\n",  primeStats.nPrimorialMultiplier);
          printf("\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\n");
-         //JLR DBG END
+         *///JLR DBG END
 
          if (ratio == 0) continue; // No weaves occurred, don't change anything.
 
@@ -1689,17 +1733,17 @@ static struct termios oldt, newt;
 }
 
 #ifdef _WIN32
-typedef std::pair <DWORD, HANDLE> thMapKeyVal;
+typedef std::pair <time_t, HANDLE> thMapKeyVal;
 time_t* threadHearthBeat;
 
-static void watchdog_thread(std::map<DWORD, HANDLE> threadMap)
+static void watchdog_thread(std::map<time_t, HANDLE> threadMap)
 #else
 static void *watchdog_thread(void *)
 #endif
 {
 #ifdef _WIN32
 	uint32_t maxIdelTime = 10 * 1000;
-		std::map <DWORD, HANDLE> :: const_iterator thMap_Iter;
+		std::map <time_t, HANDLE> :: const_iterator thMap_Iter;
 #endif
 
 
@@ -1957,19 +2001,19 @@ int jhMiner_main_xptMode()
             break;
          xptClient_process(workData.xptClient);
          char* disconnectReason = false;
-         if( workData.xptClient == NULL || xptClient_isDisconnected(workData.xptClient, &disconnectReason) )
+         if( xptClient_isDisconnected(workData.xptClient, &disconnectReason) )
          {
             // disconnected, mark all data entries as invalid
             for(uint32_t i=0; i<128; i++)
                workData.workEntry[i].dataIsValid = false;
-            printf("xpt: Disconnected, auto reconnect in 30 seconds\n");
-            if( workData.xptClient && disconnectReason )
-               printf("xpt: Disconnect reason: %s\n", disconnectReason);
+
+			printf("xpt: Disconnected, auto reconnect in 30 seconds. Reason: %s\n", disconnectReason);
 
             Sleep(30*1000);
 
             if( workData.xptClient )
                xptClient_free(workData.xptClient);
+
             xptWorkIdentifier = 0xFFFFFFFF;
             while( true )
             {
@@ -2218,8 +2262,10 @@ int main(int argc, char **argv)
          while ( true )
          {
             workData.xptClient = xptClient_connect(&jsonRequestTarget, commandlineInput.numThreads);
-            if( workData.xptClient != NULL )
-               break;
+			if (workData.xptClient != NULL) {
+				printf("Connected to pool, attempting authentication...\n");
+				break;
+			}
             printf("Failed to connect, retry in 30 seconds\n");
             Sleep(1000*30);
          }
@@ -2233,15 +2279,16 @@ int main(int argc, char **argv)
          // everything went alright?
          if( xptClient_isDisconnected(workData.xptClient, &disconnectReason) == true )
          {
+			printf("Disconnected from pool. Reason: %s\n", disconnectReason);
             xptClient_free(workData.xptClient);
             workData.xptClient = NULL;
             break;
          }
          if( xptClient_isAuthenticated(workData.xptClient) == true )
          {
-            break;
+			 break;
          }
-         if( disconnectReason )
+		 if (disconnectReason)
             printf("xpt error: %s\n", disconnectReason);
          // delete client
          xptClient_free(workData.xptClient);

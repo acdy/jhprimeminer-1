@@ -9,32 +9,33 @@
 #ifdef _WIN32
 SOCKET xptClient_openConnection(char *IP, int Port)
 {
-	SOCKET s=socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
+	SOCKET s = socket(AF_INET,SOCK_STREAM,IPPROTO_TCP);
 	SOCKADDR_IN addr;
 	memset(&addr,0,sizeof(SOCKADDR_IN));
 	addr.sin_family=AF_INET;
 	addr.sin_port=htons(Port);
 	addr.sin_addr.s_addr=inet_addr(IP);
 	int result = connect(s,(SOCKADDR*)&addr,sizeof(SOCKADDR_IN));
-  if( result )
+
+	if ( result == SOCKET_ERROR )
 	{
 		return 0;
 	}
 #else
 int xptClient_openConnection(char *IP, int Port)
 {
-  int s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-  struct sockaddr_in addr;
-  memset(&addr, 0, sizeof(sockaddr_in));
-  addr.sin_family = AF_INET;
-  addr.sin_port=htons(Port);
-  addr.sin_addr.s_addr = inet_addr(IP);
-  int result = connect(s, (sockaddr*)&addr, sizeof(sockaddr_in));
-#endif
-  if( result < 0)
-{
+	int s = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+	struct sockaddr_in addr;
+	memset(&addr, 0, sizeof(sockaddr_in));
+	addr.sin_family = AF_INET;
+	addr.sin_port=htons(Port);
+	addr.sin_addr.s_addr = inet_addr(IP);
+	int result = connect(s, (sockaddr*)&addr, sizeof(sockaddr_in));
+	if (result < 0)
+	{
 		return 0;
 	}
+#endif
 	return s;
 }
 
@@ -48,7 +49,7 @@ xptClient_t* xptClient_connect(jsonRequestTarget_t* target, uint32_t payloadNum)
 #ifdef _WIN32
 	SOCKET clientSocket = xptClient_openConnection(target->ip, target->port);
 #else
-  int clientSocket = xptClient_openConnection(target->ip, target->port);
+	int clientSocket = xptClient_openConnection(target->ip, target->port);
 #endif
 	if( clientSocket == 0 )
 		return NULL;
@@ -58,10 +59,10 @@ xptClient_t* xptClient_connect(jsonRequestTarget_t* target, uint32_t payloadNum)
 	unsigned int cbRet;
 	WSAIoctl(clientSocket, FIONBIO, &nonblocking, sizeof(nonblocking), NULL, 0, (LPDWORD)&cbRet, NULL, NULL);
 #else
-  int flags, err;
-  flags = fcntl(clientSocket, F_GETFL, 0); 
-  flags |= O_NONBLOCK;
-  err = fcntl(clientSocket, F_SETFL, flags); //ignore errors for now..
+	int flags, err;
+	flags = fcntl(clientSocket, F_GETFL, 0); 
+	flags |= O_NONBLOCK;
+	err = fcntl(clientSocket, F_SETFL, flags); //ignore errors for now..
 #endif
 	// initialize the client object
 	xptClient_t* xptClient = (xptClient_t*)malloc(sizeof(xptClient_t));
@@ -75,7 +76,7 @@ xptClient_t* xptClient_connect(jsonRequestTarget_t* target, uint32_t payloadNum)
 #ifdef _WIN32
 	InitializeCriticalSection(&xptClient->cs_shareSubmit);
 #else
-  pthread_mutex_init(&xptClient->cs_shareSubmit, NULL);
+	pthread_mutex_init(&xptClient->cs_shareSubmit, NULL);
 #endif
 	xptClient->list_shareSubmitQueue = simpleList_create(4);
 	// send worker login
@@ -96,7 +97,7 @@ void xptClient_free(xptClient_t* xptClient)
 #ifdef _WIN32
 		closesocket(xptClient->clientSocket);
 #else
-    close(xptClient->clientSocket);
+		close(xptClient->clientSocket);
 #endif
 	}
 	simpleList_free(xptClient->list_shareSubmitQueue);
@@ -132,7 +133,7 @@ void xptClient_sendClientServerPing(xptClient_t* xptClient, uint64_t timestamp)
 
 void xptClient_processClientServerPing(xptClient_t* xptClient)
 {
-	uint64_t now = getTimeMilliseconds();
+	time_t now = getTimeMilliseconds();
 	if ((xptClient->lastClient2ServerInteractionTimestamp + XPT_CLIENT_SERVER_PING_INTERVAL) < now)
 	{
 		xptClient_sendClientServerPing(xptClient, now);
@@ -154,7 +155,8 @@ void xptClient_sendWorkerLogin(xptClient_t* xptClient)
 	// finalize
 	xptPacketbuffer_finalizeWritePacket(xptClient->sendBuffer);
 	// send to client
-	send(xptClient->clientSocket, (const char*)(xptClient->sendBuffer->buffer), xptClient->sendBuffer->parserIndex, 0);
+	int ret = send(xptClient->clientSocket, (const char*)(xptClient->sendBuffer->buffer), xptClient->sendBuffer->parserIndex, 0);
+	//std::cout << ret << ":" << xptClient->sendBuffer->parserIndex << std::endl;
 	xptClient_client2ServerSent(xptClient);
 }
 
@@ -193,7 +195,7 @@ void xptClient_sendShare(xptClient_t* xptClient, xptShareToSubmit_t* xptShareToS
  */
 bool xptClient_processPacket(xptClient_t* xptClient)
 {
-	// printf("Received packet with opcode %d and size %d\n", xptClient->opcode, xptClient->recvSize+4);
+	//printf("Received packet with opcode %d and size %d\n", xptClient->opcode, xptClient->recvSize+4);
 	if( xptClient->opcode == XPT_OPC_S_AUTH_ACK )
 		return xptClient_processPacket_authResponse(xptClient);
 	else if( xptClient->opcode == XPT_OPC_S_WORKDATA1 )
@@ -236,7 +238,7 @@ bool xptClient_process(xptClient_t* xptClient)
 #ifdef _WIN32
 	LeaveCriticalSection(&xptClient->cs_shareSubmit);
 #else
-  pthread_mutex_unlock(&xptClient->cs_shareSubmit);
+	pthread_mutex_unlock(&xptClient->cs_shareSubmit);
 #endif
 	// check for packets
 	uint32_t packetFullSize = 4; // the packet always has at least the size of the header
@@ -245,25 +247,34 @@ bool xptClient_process(xptClient_t* xptClient)
 	int32_t bytesToReceive = (int32_t)(packetFullSize - xptClient->recvIndex);
 	// packet buffer is always large enough at this point
 	int32_t r = recv(xptClient->clientSocket, (char*)(xptClient->recvBuffer->buffer+xptClient->recvIndex), bytesToReceive, 0);
+	//std::cout << r << std::endl;
 	if( r <= 0 )
 	{
 #ifdef _WIN32
+		int lastError = WSAGetLastError();
+		//std::cout << "Error: " << WSAGetLastError() << std::endl;
+
 		// receive error, is it a real error or just because of non blocking sockets?
-		if( WSAGetLastError() != WSAEWOULDBLOCK )
+		if( lastError != WSAEWOULDBLOCK )
 		{
 			xptClient->disconnected = true;
+			xptClient->disconnectReason = "Remote connection closed by peer";
 			return false;
 		}
 #else
-    if(errno != EAGAIN)
-    {
-    xptClient->disconnected = true;
-    return false;
-    }
+		if(errno != EAGAIN)
+		{
+			xptClient->disconnected = true;
+			xptClient->disconnectReason = "Remote connection closed by peer";
+			return false;
+		}
 #endif
-
-		// Check if we shall send ping, because of no other activity happened
-		xptClient_processClientServerPing(xptClient);
+		// Don't send pings if it's not authenticated yet
+		if (xptClient_isAuthenticated(xptClient)) 
+		{
+			// Check if we shall send ping, because of no other activity happened
+			xptClient_processClientServerPing(xptClient);
+		}
 
 		return true;
 	}
@@ -279,7 +290,7 @@ bool xptClient_process(xptClient_t* xptClient)
 		if( packetDataSize >= (1024*1024*2-4) )
 		{
 			// packets larger than 2mb are not allowed
-				std::cout << "xptServer_receiveData(): Packet exceeds 2mb size limit" << std::endl;
+			std::cout << "xptServer_receiveData(): Packet exceeds 2mb size limit" << std::endl;
 			return false;
 		}
 		xptClient->recvSize = packetDataSize;
@@ -306,7 +317,7 @@ bool xptClient_process(xptClient_t* xptClient)
 #ifdef _WIN32
 				closesocket(xptClient->clientSocket);
 #else
-	        close(xptClient->clientSocket);
+				close(xptClient->clientSocket);
 #endif
 				xptClient->clientSocket = 0;
 			}
@@ -326,8 +337,15 @@ bool xptClient_process(xptClient_t* xptClient)
  */
 bool xptClient_isDisconnected(xptClient_t* xptClient, char** reason)
 {
-	if( reason )
-		*reason = xptClient->disconnectReason;
+	if (reason) {
+		if (xptClient == NULL) {
+			*reason = "xptClient is NULL";
+			return true;
+		} else if (xptClient->disconnectReason) {
+			*reason = xptClient->disconnectReason;
+		} 
+	}
+
 	return xptClient->disconnected;
 }
 
@@ -346,8 +364,8 @@ void xptClient_foundShare(xptClient_t* xptClient, xptShareToSubmit_t* xptShareTo
 	simpleList_add(xptClient->list_shareSubmitQueue, xptShareToSubmit);
 	LeaveCriticalSection(&xptClient->cs_shareSubmit);
 #else
-  pthread_mutex_lock(&xptClient->cs_shareSubmit);
-  simpleList_add(xptClient->list_shareSubmitQueue, xptShareToSubmit);
-  pthread_mutex_unlock(&xptClient->cs_shareSubmit);
+	pthread_mutex_lock(&xptClient->cs_shareSubmit);
+	simpleList_add(xptClient->list_shareSubmitQueue, xptShareToSubmit);
+	pthread_mutex_unlock(&xptClient->cs_shareSubmit);
 #endif
 }

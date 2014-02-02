@@ -37,7 +37,7 @@ typedef struct
 	bool disconnected;
 	char* disconnectReason;
 	// periodic ping/heartbeat info
-	uint64_t lastClient2ServerInteractionTimestamp;
+	time_t lastClient2ServerInteractionTimestamp;
 	// work data
 	uint32_t workDataCounter; // timestamp of when received the last block of work data
 	bool workDataValid;

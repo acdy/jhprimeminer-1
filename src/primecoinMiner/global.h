@@ -145,6 +145,8 @@ std::string HexStr(const T itbegin, const T itend, bool fSpaces=false)
     return rv;
 }
 
+void hexDump(char *desc, void *addr, int len);
+
 typedef struct  
 {
 	/* +0x00 */ uint32_t seed;
