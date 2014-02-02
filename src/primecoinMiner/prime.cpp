@@ -45,7 +45,7 @@ uint32_t nSieveExtensions = nDefaultSieveExtensions;
 
 static uint32_t int_invert(uint32_t a, uint32_t nPrime);
 
-static bool FermatProbablePrimalityTestFast(const mpz_class& n, uint32_t& nLength, CPrimalityTestParams& testParams, bool fFastFail = false);
+static bool FermatProbablePrimalityTestFast(const mpz_class& n, mpir_ui& nLength, CPrimalityTestParams& testParams, bool fFastFail = false);
 
 void GeneratePrimeTable(uint32_t nSieveSize)
 {
@@ -183,7 +183,7 @@ static bool FermatProbablePrimalityTest(const CBigNum& n, uint32_t& nLength)
 // Check Fermat probable primality test (2-PRP): 2 ** (n-1) = 1 (mod n)
 // true: n is probable prime
 // false: n is composite; set fractional length in the nLength output
-static bool FermatProbablePrimalityTest(const mpz_class& n, uint32_t& nLength)
+static bool FermatProbablePrimalityTest(const mpz_class& n, mpir_ui& nLength)
 {
    // Faster GMP version
 
@@ -286,7 +286,7 @@ public:
    uint32_t nHalfTargetLength;
 
    // Results
-   uint32_t nChainLength;
+   mpir_ui nChainLength;
 
    CPrimalityTestParams(uint32_t nBits, uint32_t nPrimorialSeq)
    {
@@ -312,7 +312,7 @@ public:
 // Check Fermat probable primality test (2-PRP): 2 ** (n-1) = 1 (mod n)
 // true: n is probable prime
 // false: n is composite; set fractional length in the nLength output
-static bool FermatProbablePrimalityTestFast(const mpz_class& n, uint32_t& nLength, CPrimalityTestParams& testParams, bool fFastFail)
+static bool FermatProbablePrimalityTestFast(const mpz_class& n, mpir_ui& nLength, CPrimalityTestParams& testParams, bool fFastFail)
 {
    // Faster GMP version
    mpz_t& mpzE = testParams.mpzE;
@@ -332,7 +332,7 @@ static bool FermatProbablePrimalityTestFast(const mpz_class& n, uint32_t& nLengt
    mpz_sub(mpzE, n.get_mpz_t(), mpzR);
    mpz_mul_2exp(mpzR, mpzE, nFractionalBits);
    mpz_tdiv_q(mpzE, mpzR, n.get_mpz_t());
-   uint32_t nFractionalLength = (uint32_t)mpz_get_ui(mpzE);
+   mpir_ui nFractionalLength = mpz_get_ui(mpzE);
    if (nFractionalLength >= (1 << nFractionalBits))
       return error("FermatProbablePrimalityTest() : fractional assert");
    nLength = (nLength & TARGET_LENGTH_MASK) | nFractionalLength;
@@ -348,7 +348,7 @@ static bool FermatProbablePrimalityTestFast(const mpz_class& n, uint32_t& nLengt
 // Return values
 //   true: n is probable prime
 //   false: n is composite; set fractional length in the nLength output
-static bool EulerLagrangeLifchitzPrimalityTestFast(const mpz_class& n, bool fSophieGermain, uint32_t& nLength, CPrimalityTestParams& testParams/*, bool fFastDiv = false*/)
+static bool EulerLagrangeLifchitzPrimalityTestFast(const mpz_class& n, bool fSophieGermain, mpir_ui& nLength, CPrimalityTestParams& testParams/*, bool fFastDiv = false*/)
 {
    // Faster GMP version
    mpz_t& mpzE = testParams.mpzE;
@@ -377,7 +377,7 @@ static bool EulerLagrangeLifchitzPrimalityTestFast(const mpz_class& n, bool fSop
    mpz_sub_ui(mpzE, n.get_mpz_t(), 1);
    mpz_tdiv_q_2exp(mpzE, mpzE, 1);
    mpz_powm(mpzR, mpzTwo.get_mpz_t(), mpzE, n.get_mpz_t());
-   uint32_t nMod8 = mpz_get_ui(n.get_mpz_t()) % 8;
+   mpir_ui nMod8 = mpz_get_ui(n.get_mpz_t()) % 8;
    bool fPassedTest = false;
    if (fSophieGermain && (nMod8 == 7)) // Euler & Lagrange
       fPassedTest = !mpz_cmp_ui(mpzR, 1);
@@ -424,7 +424,7 @@ static bool EulerLagrangeLifchitzPrimalityTestFast(const mpz_class& n, bool fSop
 // Return values
 //   true: n is probable prime
 //   false: n is composite; set fractional length in the nLength output
-static bool EulerLagrangeLifchitzPrimalityTest(const mpz_class& n, bool fSophieGermain, uint32_t& nLength)
+static bool EulerLagrangeLifchitzPrimalityTest(const mpz_class& n, bool fSophieGermain, mpir_ui& nLength)
 {
    // Faster GMP version
    mpz_t mpzN;
@@ -511,7 +511,7 @@ uint32_t TargetGetInitial()
    return (nTargetInitialLength << nFractionalBits);
 }
 
-uint32_t TargetGetLength(uint32_t nBits)
+uint32_t TargetGetLength(mpir_ui nBits)
 {
    return ((nBits & TARGET_LENGTH_MASK) >> nFractionalBits);
 }
@@ -525,12 +525,12 @@ bool TargetSetLength(uint32_t nLength, uint32_t& nBits)
    return true;
 }
 
-void TargetIncrementLength(uint32_t& nBits)
+void TargetIncrementLength(mpir_ui& nBits)
 {
    nBits += (1 << nFractionalBits);
 }
 
-void TargetDecrementLength(uint32_t& nBits)
+void TargetDecrementLength(mpir_ui& nBits)
 {
    if (TargetGetLength(nBits) > nTargetMinLength)
       nBits -= (1 << nFractionalBits);
@@ -546,7 +546,7 @@ uint64_t TargetGetFractionalDifficulty(uint32_t nBits)
    return (nFractionalDifficultyMax / (uint64_t) ((1ull<<nFractionalBits) - TargetGetFractional(nBits)));
 }
 
-bool TargetSetFractionalDifficulty(uint64_t nFractionalDifficulty, uint32_t& nBits)
+bool TargetSetFractionalDifficulty(uint64_t nFractionalDifficulty, mpir_ui& nBits)
 {
    if (nFractionalDifficulty < nFractionalDifficultyMin)
       return error("TargetSetFractionalDifficulty() : difficulty below min");
@@ -596,7 +596,7 @@ bool TargetGetMint(uint32_t nBits, uint64_t& nMint)
 }
 
 // Get next target value
-bool TargetGetNext(uint32_t nBits, uint64_t nInterval, uint64_t nTargetSpacing, uint64_t nActualSpacing, uint32_t& nBitsNext)
+bool TargetGetNext(uint32_t nBits, uint64_t nInterval, uint64_t nTargetSpacing, uint64_t nActualSpacing, mpir_ui& nBitsNext)
 {
    nBitsNext = nBits;
    // Convert length into fractional difficulty
@@ -639,7 +639,7 @@ bool TargetGetNext(uint32_t nBits, uint64_t nInterval, uint64_t nTargetSpacing, 
 // Return value:
 //   true - Probable Cunningham Chain found (length at least 2)
 //   false - Not Cunningham Chain
-static bool ProbableCunninghamChainTestFast(const mpz_class& n, const bool fSophieGermain, const bool fFermatTest, uint32_t& nProbableChainLength, CPrimalityTestParams& testParams, bool fBiTwinTest)
+static bool ProbableCunninghamChainTestFast(const mpz_class& n, const bool fSophieGermain, const bool fFermatTest, mpir_ui& nProbableChainLength, CPrimalityTestParams& testParams, bool fBiTwinTest)
 {
    nProbableChainLength = 0;
 
@@ -712,7 +712,7 @@ static bool ProbableCunninghamChainTestFast(const mpz_class& n, const bool fSoph
 // Return value:
 //   true - Probable Cunningham Chain found (length at least 2)
 //   false - Not Cunningham Chain
-static bool ProbableCunninghamChainTest(const mpz_class& n, bool fSophieGermain, bool fFermatTest, uint32_t& nProbableChainLength)
+static bool ProbableCunninghamChainTest(const mpz_class& n, bool fSophieGermain, bool fFermatTest, mpir_ui& nProbableChainLength)
 {
    nProbableChainLength = 0;
    mpz_class N = n;
@@ -776,7 +776,7 @@ static bool ProbableCunninghamChainTestBN(const CBigNum& n, bool fSophieGermain,
 // Return value:
 //   true - Probable prime chain found (one of nChainLength meeting target)
 //   false - prime chain too short (none of nChainLength meeting target)
-bool ProbablePrimeChainTest(const mpz_class& bnPrimeChainOrigin, uint32_t nBits, bool fFermatTest, uint32_t& nChainLengthCunningham1, uint32_t& nChainLengthCunningham2, uint32_t& nChainLengthBiTwin, bool fullTest)
+bool ProbablePrimeChainTest(const mpz_class& bnPrimeChainOrigin, uint32_t nBits, bool fFermatTest, mpir_ui& nChainLengthCunningham1, mpir_ui& nChainLengthCunningham2, mpir_ui& nChainLengthBiTwin, bool fullTest)
 {
    nChainLengthCunningham1 = 0;
    nChainLengthCunningham2 = 0;
@@ -811,7 +811,7 @@ static bool ProbablePrimeChainTestFast(const mpz_class& mpzPrimeChainOrigin, CPr
 {
    const uint32_t nBits = testParams.nBits;
    const uint32_t nCandidateType = testParams.nCandidateType;
-   uint32_t& nChainLength = testParams.nChainLength;
+   mpir_ui& nChainLength = testParams.nChainLength;
    mpz_class& mpzOriginMinusOne = testParams.mpzOriginMinusOne;
    mpz_class& mpzOriginPlusOne = testParams.mpzOriginPlusOne;
    nChainLength = 0;
@@ -830,8 +830,8 @@ static bool ProbablePrimeChainTestFast(const mpz_class& mpzPrimeChainOrigin, CPr
    }
    else
    {
-      uint32_t nChainLengthCunningham1 = 0;
-      uint32_t nChainLengthCunningham2 = 0;
+      mpir_ui nChainLengthCunningham1 = 0;
+	  mpir_ui nChainLengthCunningham2 = 0;
       mpzOriginMinusOne = mpzPrimeChainOrigin - 1;
       if (ProbableCunninghamChainTestFast(mpzOriginMinusOne, true, false, nChainLengthCunningham1, testParams, true))
       {
@@ -856,7 +856,7 @@ static bool ProbablePrimeChainTestFast(const mpz_class& mpzPrimeChainOrigin, CPr
 //boost::thread_specific_ptr<CSieveOfEratosthenes> psieve;
 
 // Mine probable prime chain of form: n = h * p# +/- 1
-bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* block, mpz_class& mpzFixedMultiplier, bool& fNewBlock, uint32_t& nTriedMultiplier, uint32_t& nProbableChainLength, 
+bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* block, mpz_class& mpzFixedMultiplier, bool& fNewBlock, uint32_t& nTriedMultiplier, mpir_ui& nProbableChainLength, 
                             uint32_t& nTests, uint32_t& nPrimesHit, int32_t threadIndex, mpz_class& mpzHash, uint32_t nPrimorialMultiplier)
 {
 
@@ -923,7 +923,7 @@ bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* blo
    CPrimalityTestParams testParams(block->serverData.nBitsForShare, nPrimorialSeq);
 
    // References to test parameters
-   uint32_t& nChainLength = testParams.nChainLength;
+   mpir_ui& nChainLength = testParams.nChainLength;
    uint32_t& nCandidateType = testParams.nCandidateType;
 
    //nStart = GetTickCount();
@@ -992,7 +992,7 @@ bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* blo
          timeinfo = localtime (&now);
          char sNow [80];
          strftime (sNow, 80, "%x-%X",timeinfo);
-         float shareDiff = GetChainDifficulty(nProbableChainLength);
+         float shareDiff = GetChainDifficulty((uint32_t)nProbableChainLength);
 
          if (bSoloMining)
          {
@@ -1012,22 +1012,23 @@ bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* blo
 //JLR
 //printf("At: C\n");
             // update server data
-            block->serverData.client_shareBits = nProbableChainLength;
+            block->serverData.client_shareBits = (uint32_t)nProbableChainLength;
             // generate block raw data
             uint8_t blockRawData[256] = {0};
             memcpy(blockRawData, block, 80);
             uint32_t writeIndex = 80;
-            size_t lengthBN = 0;
+            uint32_t lengthBN = 0;
             CBigNum bnPrimeChainMultiplier;
             bnPrimeChainMultiplier.SetHex(block->mpzPrimeChainMultiplier.get_str(16));
 			std::vector<uint8_t> bnSerializeData = bnPrimeChainMultiplier.getvch();
-            lengthBN = bnSerializeData.size();
+			lengthBN = (uint32_t)bnSerializeData.size();
             *(uint8_t*)(blockRawData+writeIndex) = (uint8_t)lengthBN; // varInt (we assume it always has a size low enough for 1 byte)
             writeIndex += 1;
             memcpy(blockRawData+writeIndex, &bnSerializeData[0], lengthBN);
             writeIndex += lengthBN;	
             // switch endianness
-            for(uint32_t f=0; f<256/4; f++)
+			uint32_t size = 256 / 4;
+			for (uint32_t f = 0; f < size; f++)
             {
                *(uint32_t*)(blockRawData+f*4) = _swapEndianessU32(*(uint32_t*)(blockRawData+f*4));
             }
@@ -1552,7 +1553,7 @@ bool CSieveOfEratosthenes::Weave()
    // Check whether fixed multiplier fits in an unsigned long
    //bool fUseLongForFixedMultiplier = mpzFixedMultiplier < ULONG_MAX;
    bool fUseLongForFixedMultiplier = false;
-   uint32_t nFixedMultiplier;
+   mpir_ui nFixedMultiplier;
    mpz_class mpzFixedFactor;
    if (fUseLongForFixedMultiplier)
       nFixedMultiplier = mpzFixedMultiplier.get_ui();
@@ -1560,7 +1561,7 @@ bool CSieveOfEratosthenes::Weave()
       mpzFixedFactor = mpzHash * mpzFixedMultiplier;
 
    uint32_t nCombinedEndSeq = this->nPrimeSeq;
-   uint32_t nFixedFactorCombinedMod = 0;
+   mpir_ui nFixedFactorCombinedMod = 0;
 
    for (uint32_t nPrimeSeqLocal = this->nPrimeSeq; nPrimeSeqLocal < nPrimes; nPrimeSeqLocal++)
    {

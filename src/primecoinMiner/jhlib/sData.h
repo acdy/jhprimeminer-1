@@ -1,8 +1,3 @@
-#ifndef _WIN32
-#include <stdint.h>
-typedef uint32_t DWORD;
-#endif
-	
 typedef struct  
 {
 	char *optionName;
@@ -14,9 +9,9 @@ typedef struct
 	stream_t *file;
 	// current category settings
 	char *categoryName;
-	DWORD categoryDataOffset;
+	uint32_t categoryDataOffset;
 	// option data
-	size_t optionLineCount;
+	uint32_t optionLineCount;
 	sData_optionLine_t *optionLine;
 }sData_t;
 

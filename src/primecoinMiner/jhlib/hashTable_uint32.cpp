@@ -1,8 +1,3 @@
-#ifdef _WIN32
-#include<Windows.h>
-#else
-#include <cstdlib>
-#endif
 #include"hashTable.h"
 
 #ifndef memMgr_alloc
@@ -13,12 +8,12 @@
 #define MAXSCAN_LENGTH	32 // maximal number of filled hashentrys in a row
 
 // uint32_t tables are growable
-void hashTable_init(hashTable_t *hashTable, int itemLimit)
+void hashTable_init(hashTable_t *hashTable, int32_t itemLimit)
 {
 	hashTable->size = itemLimit;
 	hashTable->count = 0;
 	hashTable->entrys = (_HashTable_uint32Iterable_entry_t*)memMgr_alloc(NULL, sizeof(_HashTable_uint32Iterable_entry_t)*itemLimit);
-	hashTable->itemKeyArray = (unsigned int*)memMgr_alloc(NULL, sizeof(unsigned int)*itemLimit);
+	hashTable->itemKeyArray = (uint32_t*)memMgr_alloc(NULL, sizeof(uint32_t)*itemLimit);
 	hashTable->itemValueArray = (void**)memMgr_alloc(NULL, sizeof(void*)*itemLimit);
 	// reset all items
 	for(int i=0; i<itemLimit; i++)
@@ -55,7 +50,7 @@ void hashTable_enlarge(hashTable_t *hashTable)
 	hashTable_t hashTable2;
 	hashTable_init(&hashTable2, hashTable->size*2);
 	// move entrys from old table to new table
-	for(unsigned int i=0; i<hashTable->size; i++)
+	for(uint32_t i=0; i<hashTable->size; i++)
 	{
 		if( hashTable->entrys[i].itemIndex )
 		{
@@ -75,7 +70,7 @@ void hashTable_enlarge(hashTable_t *hashTable)
 	hashTable->itemValueArray = hashTable2.itemValueArray;
 }
 
-void _hashTable_updateReference(hashTable_t *hashTable, unsigned int key, int oldReference, int newReference)
+void _hashTable_updateReference(hashTable_t *hashTable, uint32_t key, int32_t oldReference, int32_t newReference)
 {
 	uint32_t hashA = key + key*3 + key*7 + key*11;
 	// get entry
@@ -98,12 +93,12 @@ void _hashTable_updateReference(hashTable_t *hashTable, unsigned int key, int ol
 	}
 }
 
-bool hashTable_set(hashTable_t *hashTable, unsigned int key, void *item)
+bool hashTable_set(hashTable_t *hashTable, uint32_t key, void *item)
 {
 	uint32_t hashA = key + key*3 + key*7 + key*11;
 	// get entry
-	int index = hashA%hashTable->size;
-	for(int i=0; i<MAXSCAN_LENGTH; i++) 
+	uint32_t index = hashA%hashTable->size;
+	for(uint32_t i=0; i<MAXSCAN_LENGTH; i++) 
 	{
 		int ridx = hashTable->entrys[index].itemIndex;
 		if( ridx == 0 )
@@ -158,12 +153,13 @@ bool hashTable_set(hashTable_t *hashTable, unsigned int key, void *item)
 
 bool hashTable_set(hashTable_t *hashTable, char *key, void *item)
 {
-	unsigned int keyValue = 0xF94A9E53;
-	unsigned int keyB = 0x2D48C92E;
+	uint32_t keyValue = 0xF94A9E53;
+	uint32_t keyB = 0x2D48C92E;
+
 	while( *key )
 	{
-		keyValue	+=	(unsigned int)*key;
-		keyB		^=	((unsigned int)*key)*7;
+		keyValue	+= (uint32_t)*key;
+		keyB		^= ((uint32_t)*key) * 7;
 		keyValue	=	(keyValue<<3)|(keyValue>>29);
 		keyB		=	(keyB<<7)|(keyB>>25);
 		keyValue	+=	keyB;
@@ -172,14 +168,14 @@ bool hashTable_set(hashTable_t *hashTable, char *key, void *item)
 	return hashTable_set(hashTable, keyValue, item);
 }
 
-void *hashTable_get(hashTable_t *hashTable, unsigned int key)
+void *hashTable_get(hashTable_t *hashTable, uint32_t key)
 {
 	uint32_t hashA = key + key*3 + key*7 + key*11;
 	// get entry
 	if( hashTable->size == 0 )
 		return NULL; // hashTable not initialized or empty
-	int index = hashA%hashTable->size;
-	for(int i=0; i<MAXSCAN_LENGTH; i++) 
+	uint32_t index = hashA%hashTable->size;
+	for (uint32_t i = 0; i<MAXSCAN_LENGTH; i++)
 	{
 		int ridx = hashTable->entrys[index].itemIndex;
 		if( !ridx )
@@ -199,12 +195,12 @@ void *hashTable_get(hashTable_t *hashTable, unsigned int key)
 
 void *hashTable_get(hashTable_t *hashTable, char *key)
 {
-	unsigned int keyValue = 0xF94A9E53;
-	unsigned int keyB = 0x2D48C92E;
+	uint32_t keyValue = 0xF94A9E53;
+	uint32_t keyB = 0x2D48C92E;
 	while( *key )
 	{
-		keyValue	+=	(unsigned int)*key;
-		keyB		^=	((unsigned int)*key)*7;
+		keyValue	+= (uint32_t)*key;
+		keyB		^= ((uint32_t)*key) * 7;
 		keyValue	=	(keyValue<<3)|(keyValue>>29);
 		keyB		=	(keyB<<7)|(keyB>>25);
 		keyValue	+=	keyB;
@@ -218,12 +214,12 @@ void** hashTable_getValueArray(hashTable_t *hashTable)
 	return hashTable->itemValueArray;
 }
 
-unsigned int* hashTable_getKeyArray(hashTable_t *hashTable)
+uint32_t* hashTable_getKeyArray(hashTable_t *hashTable)
 {
 	return hashTable->itemKeyArray;
 }
 
-unsigned int hashTable_getCount(hashTable_t *hashTable)
+uint32_t hashTable_getCount(hashTable_t *hashTable)
 {
 	return hashTable->count;
 }

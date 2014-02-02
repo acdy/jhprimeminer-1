@@ -120,7 +120,7 @@ static inline void swap32yes(void*out, const void*in, size_t sz) {
 #define swap32tobe(out, in, sz)  swap32yes(out, in, sz)
 
 
-static inline float GetChainDifficulty(double nChainLength)
+static inline float GetChainDifficulty(uint32_t nChainLength)
 {
 	return (float)(nChainLength / 16777216.0);
 }

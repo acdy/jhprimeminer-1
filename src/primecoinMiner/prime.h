@@ -89,17 +89,17 @@ static const uint64_t nFractionalDifficultyMax = (1ull << (nFractionalBits + 32)
 static const uint64_t nFractionalDifficultyMin = (1ull << 32);
 static const uint64_t nFractionalDifficultyThreshold = (1ull << (8 + 32));
 static const unsigned int nWorkTransitionRatio = 32;
-unsigned int TargetGetLimit();
-unsigned int TargetGetInitial();
-unsigned int TargetGetLength(unsigned int nBits);
-bool TargetSetLength(unsigned int nLength, unsigned int& nBits);
-unsigned int TargetGetFractional(unsigned int nBits);
-uint64_t TargetGetFractionalDifficulty(unsigned int nBits);
-bool TargetSetFractionalDifficulty(uint64_t nFractionalDifficulty, unsigned int& nBits);
-std::string TargetToString(unsigned int nBits);
-unsigned int TargetFromInt(unsigned int nLength);
-bool TargetGetMint(unsigned int nBits, uint64_t& nMint);
-bool TargetGetNext(unsigned int nBits, uint64_t nInterval, uint64_t nTargetSpacing, uint64_t nActualSpacing, unsigned int& nBitsNext);
+uint32_t TargetGetLimit();
+uint32_t TargetGetInitial();
+uint32_t TargetGetLength(mpir_ui nBits);
+bool TargetSetLength(uint32_t nLength, uint32_t& nBits);
+uint32_t TargetGetFractional(uint32_t nBits);
+uint64_t TargetGetFractionalDifficulty(uint32_t nBits);
+bool TargetSetFractionalDifficulty(uint64_t nFractionalDifficulty, uint32_t& nBits);
+std::string TargetToString(uint32_t nBits);
+uint32_t TargetFromInt(uint32_t nLength);
+bool TargetGetMint(uint32_t nBits, uint64_t& nMint);
+bool TargetGetNext(uint32_t nBits, uint64_t nInterval, uint64_t nTargetSpacing, uint64_t nActualSpacing, uint32_t& nBitsNext);
 
 // Mine probable prime chain of form: n = h * p# +/- 1
 //bool MineProbablePrimeChain(CBlock& block, CBigNum& bnFixedMultiplier, bool& fNewBlock, unsigned int& nTriedMultiplier, unsigned int& nProbableChainLength, unsigned int& nTests, unsigned int& nPrimesHit);
@@ -116,9 +116,9 @@ enum // prime chain type
 // prime target difficulty value for visualization
 double GetPrimeDifficulty(double nBits);
 // Estimate work transition target to longer prime chain
-uint64_t EstimateWorkTransition(uint64_t nPrevWorkTransition, unsigned int nBits, unsigned int nChainLength);
+uint64_t EstimateWorkTransition(uint64_t nPrevWorkTransition, uint32_t nBits, uint32_t nChainLength);
 // prime chain type and length value
-std::string GetPrimeChainName(unsigned int nChainType, unsigned int nChainLength);
+std::string GetPrimeChainName(uint32_t nChainType, uint32_t nChainLength);
 
 
 	// Sieve of Eratosthenes for proof-of-work mining
@@ -182,9 +182,9 @@ class CSieveOfEratosthenes
     
    unsigned int nChainLength; // target chain length
    unsigned int nBTChainLength; // target chain length
-   size_t nSieveLayers; // sieve layers
-   size_t nPrimes; // number of times to weave the sieve
-   size_t nTotalPrimes;
+   uint32_t nSieveLayers; // sieve layers
+   uint32_t nPrimes; // number of times to weave the sieve
+   uint32_t nTotalPrimes;
     
     //CBlockIndex* pindexPrev;
     
@@ -210,7 +210,7 @@ public:
       this->nChainLength = nTargetChainLength;
       this->nBTChainLength = nTargetBTLength;
       this->nSieveLayers = nChainLength + nSieveExtensions;
-      this->nTotalPrimes = vPrimes.size();
+      this->nTotalPrimes = (uint32_t)vPrimes.size();
 	  this->nPrimes = (uint64_t)nTotalPrimes * nSievePercentage / 100;
       this->nPrimeSeq = nMinPrimeSeq;
       this->nCandidateCount = 0;
@@ -281,7 +281,7 @@ public:
       this->nChainLength = nTargetChainLength;
       this->nBTChainLength = nTargetBTLength;
       this->nSieveLayers = nChainLength + nSieveExtensions;
-      this->nTotalPrimes = vPrimes.size();
+      this->nTotalPrimes = (uint32_t)vPrimes.size();
 	  this->nPrimes = (uint64_t)nTotalPrimes * nSievePercentage / 100;
       this->nPrimeSeq = nMinPrimeSeq;
       this->nCandidateCount = 0;

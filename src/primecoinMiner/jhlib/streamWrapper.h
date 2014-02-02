@@ -48,30 +48,30 @@ void		stream_destroy	(stream_t *stream);
 
 // stream reading
 
-char stream_readS8(stream_t *stream);
-short stream_readS16(stream_t *stream);
-int stream_readS32(stream_t *stream);
+int8_t stream_readS8(stream_t *stream);
+int16_t stream_readS16(stream_t *stream);
+int32_t stream_readS32(stream_t *stream);
 uint8_t stream_readU8(stream_t *stream);
 uint16_t stream_readU16(stream_t *stream);
 uint32_t stream_readU32(stream_t *stream);
-unsigned long long stream_readU64(stream_t *stream);
+uint64_t stream_readU64(stream_t *stream);
 float stream_readFloat(stream_t *stream);
-uint32_t stream_readData(stream_t *stream, void *data, int len);
+uint32_t stream_readData(stream_t *stream, void *data, uint32_t len);
 // stream writing
-void stream_writeS8(stream_t *stream, char value);
-void stream_writeS16(stream_t *stream, short value);
-void stream_writeS32(stream_t *stream, int value);
+void stream_writeS8(stream_t *stream, int8_t value);
+void stream_writeS16(stream_t *stream, int16_t value);
+void stream_writeS32(stream_t *stream, int32_t value);
 void stream_writeU8(stream_t *stream, uint8_t value);
 void stream_writeU16(stream_t *stream, uint16_t value);
 void stream_writeU32(stream_t *stream, uint32_t value);
 void stream_writeFloat(stream_t *stream, float value);
-uint32_t stream_writeData(stream_t *stream, void *data, int len);
+uint32_t stream_writeData(stream_t *stream, void *data, uint32_t len);
 // stream other
-void stream_setSeek(stream_t *stream, uint32_t seek);
+void stream_setSeek(stream_t *stream, int32_t seek);
 uint32_t stream_getSeek(stream_t *stream);
 uint32_t stream_getSize(stream_t *stream);
 void stream_setSize(stream_t *stream, uint32_t size);
-void stream_skipData(stream_t *stream, int len);
+void stream_skipData(stream_t *stream, uint32_t len);
 uint32_t stream_copy(stream_t* dest, stream_t* source, uint32_t length);
 
 // bit operations

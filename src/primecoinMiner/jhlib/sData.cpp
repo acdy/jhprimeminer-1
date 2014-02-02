@@ -119,9 +119,9 @@ void _sData_preloadCategory(sData_t *sData)
 		if( (*x >= 'a' && *x <= 'z') || (*x >= 'A' && *x <= 'Z') )
 		{
 			int32_t splitIdx = -1;
-			size_t tLen = strlen(x);
+			int32_t tLen = (int32_t)strlen(x);
 			// find '='
-			for (size_t i = 0; i<tLen; i++)
+			for (int32_t i = 0; i<tLen; i++)
 			{
 				if( x[i] == '=' )
 				{
@@ -134,7 +134,7 @@ void _sData_preloadCategory(sData_t *sData)
 				// only name set...
 				// cover with empty data string
 				sData->optionLine[lineCount].optionName = (char*)malloc(tLen+1);
-				for(size_t p=0; p<tLen; p++)
+				for (int32_t p = 0; p<tLen; p++)
 					sData->optionLine[lineCount].optionName[p] = x[p];
 				sData->optionLine[lineCount].optionName[tLen] = '\0';
 				sData->optionLine[lineCount].optionData = (char*)malloc(1);
@@ -144,21 +144,21 @@ void _sData_preloadCategory(sData_t *sData)
 			{
 				// name
 				sData->optionLine[lineCount].optionName = (char*)malloc(splitIdx+1);
-				for (size_t p = 0; p<splitIdx; p++)
+				for (int32_t p = 0; p<splitIdx; p++)
 					sData->optionLine[lineCount].optionName[p] = x[p];
 				sData->optionLine[lineCount].optionName[splitIdx] = '\0';
 				// skip '='
 				splitIdx++;
 				// data - but skip whitespaces first
 				int32_t whiteSpaceCount = 0;
-				for (size_t i = 0; i<tLen - splitIdx; i++)
+				for (int32_t i = 0; i<tLen - splitIdx; i++)
 				{
 					if( x[i+splitIdx] != ' ' && x[i+splitIdx] != '\t' )
 						break;
 					whiteSpaceCount++;
 				}
 				sData->optionLine[lineCount].optionData = (char*)malloc(tLen-whiteSpaceCount-splitIdx+1);
-				for (size_t p = 0; p<(tLen - splitIdx - whiteSpaceCount); p++)
+				for (int32_t p = 0; p<(tLen - splitIdx - whiteSpaceCount); p++)
 					sData->optionLine[lineCount].optionData[p] = x[p+splitIdx+whiteSpaceCount];
 				sData->optionLine[lineCount].optionData[tLen-splitIdx-whiteSpaceCount] = '\0';
 				// cut whitespaces from the end
@@ -296,7 +296,7 @@ void sData_close(sData_t *sData)
 	}
 	if( sData->optionLine )
 	{
-		for (size_t i = 0; i<sData->optionLineCount; i++)
+		for (uint32_t i = 0; i<sData->optionLineCount; i++)
 		{
 			if( sData->optionLine[i].optionName )
 				free(sData->optionLine[i].optionName);

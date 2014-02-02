@@ -21,17 +21,17 @@ void stream_destroy(stream_t *stream)
 }
 
 /* writing */
-void stream_writeS8(stream_t *stream, char value)
+void stream_writeS8(stream_t *stream, int8_t value)
 {
 	stream->settings->writeData(stream->object, (void*)&value, 1);
 }
 
-void stream_writeS16(stream_t *stream, short value)
+void stream_writeS16(stream_t *stream, int16_t value)
 {
 	stream->settings->writeData(stream->object, (void*)&value, 2);
 }
 
-void stream_writeS32(stream_t *stream, int value)
+void stream_writeS32(stream_t *stream, int32_t value)
 {
 	stream->settings->writeData(stream->object, (void*)&value, 4);
 }
@@ -56,34 +56,34 @@ void stream_writeFloat(stream_t *stream, float value)
 	stream->settings->writeData(stream->object, (void*)&value, 4);
 }
 
-uint32_t stream_writeData(stream_t *stream, void *data, int len)
+uint32_t stream_writeData(stream_t *stream, void *data, uint32_t len)
 {
 	return stream->settings->writeData(stream->object, (void*)data, len);
 }
 
-void stream_skipData(stream_t *stream, int len)
+void stream_skipData(stream_t *stream, int32_t len)
 {
 	stream->settings->setSeek(stream->object, len, true);
 }
 
 
-char stream_readS8(stream_t *stream)
+int8_t stream_readS8(stream_t *stream)
 {
-	char value;
+	int8_t value;
 	stream->settings->readData(stream->object, (void*)&value, 1);
 	return value;
 }
 
-short stream_readS16(stream_t *stream)
+int16_t stream_readS16(stream_t *stream)
 {
-	short value;
+	int16_t value;
 	stream->settings->readData(stream->object, (void*)&value, 2);
 	return value;
 }
 
-int stream_readS32(stream_t *stream)
+int32_t stream_readS32(stream_t *stream)
 {
-	int value;
+	int32_t value;
 	stream->settings->readData(stream->object, (void*)&value, 4);
 	return value;
 }
@@ -109,9 +109,9 @@ uint32_t stream_readU32(stream_t *stream)
 	return value;
 }
 
-unsigned long long stream_readU64(stream_t *stream)
+uint64_t stream_readU64(stream_t *stream)
 {
-	unsigned long long value;
+	uint64_t value;
 	stream->settings->readData(stream->object, (void*)&value, 8);
 	return value;
 }
@@ -123,7 +123,7 @@ float stream_readFloat(stream_t *stream)
 	return value;
 }
 
-uint32_t stream_readData(stream_t *stream, void *data, int len)
+uint32_t stream_readData(stream_t *stream, void *data, uint32_t len)
 {
 	return stream->settings->readData(stream->object, data, len);
 }
@@ -158,7 +158,7 @@ uint32_t stream_readData(stream_t *stream, void *data, int len)
 //	return cstr;
 //}
 
-void stream_setSeek(stream_t *stream, uint32_t seek)
+void stream_setSeek(stream_t *stream, int32_t seek)
 {
 	stream->settings->setSeek(stream->object, seek, false);
 }

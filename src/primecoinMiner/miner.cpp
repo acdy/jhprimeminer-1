@@ -3,8 +3,8 @@
 #include "ticker.h"
 
 
-bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* block, mpz_class& bnFixedMultiplier, bool& fNewBlock, unsigned int& nTriedMultiplier, unsigned int& nProbableChainLength, 
-							unsigned int& , unsigned int& nPrimesHit, int32_t threadIndex, mpz_class& mpzHash, unsigned int nPrimorialMultiplier);
+bool MineProbablePrimeChain(CSieveOfEratosthenes*& psieve, primecoinBlock_t* block, mpz_class& mpzFixedMultiplier, bool& fNewBlock, uint32_t& nTriedMultiplier, mpir_ui& nProbableChainLength,
+							uint32_t& nTests, uint32_t& nPrimesHit, int32_t threadIndex, mpz_class& mpzHash, uint32_t nPrimorialMultiplier);
 
 std::set<mpz_class> multiplierSet;
 
@@ -131,7 +131,7 @@ bool BitcoinMiner(primecoinBlock_t* primecoinBlock, CSieveOfEratosthenes*& psiev
 	//JLR DBG
 	//printf("fixedMultiplier: %d nPrimorialMultiplier: %d\n", BN_get_word(&bnFixedMultiplier), nPrimorialMultiplier);
 		// Primecoin: mine for prime chain
-		unsigned int nProbableChainLength;
+		mpir_ui nProbableChainLength;
 		MineProbablePrimeChain(psieve, primecoinBlock, mpzFixedMultiplier, fNewBlock, nTriedMultiplier, nProbableChainLength, nTests, nPrimesHit, threadIndex, mpzHash, nPrimorialMultiplier);
 #ifdef _WIN32
 		threadHearthBeat[threadIndex] = getTimeMilliseconds();

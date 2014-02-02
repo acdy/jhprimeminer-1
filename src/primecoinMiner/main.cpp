@@ -281,12 +281,12 @@ void primecoinBlock_generateBlockHash(primecoinBlock_t* primecoinBlock, uint8_t 
 {
 	uint8_t blockHashDataInput[512];
    memcpy(blockHashDataInput, primecoinBlock, 80);
-   size_t writeIndex = 80;
-   size_t lengthBN = 0;
+   uint32_t writeIndex = 80;
+   uint32_t lengthBN = 0;
    CBigNum bnPrimeChainMultiplier;
    bnPrimeChainMultiplier.SetHex(primecoinBlock->mpzPrimeChainMultiplier.get_str(16));
    std::vector<unsigned char> bnSerializeData = bnPrimeChainMultiplier.getvch();
-   lengthBN = bnSerializeData.size();
+   lengthBN = (uint32_t)bnSerializeData.size();
    *(uint8_t*)(blockHashDataInput + writeIndex) = (uint8_t)lengthBN;
    writeIndex += 1;
    memcpy(blockHashDataInput+writeIndex, &bnSerializeData[0], lengthBN);
@@ -399,7 +399,7 @@ bool jhMiner_pushShare_primecoin(uint8_t data[512], primecoinBlock_t* primecoinB
       CBigNum bnPrimeChainMultiplier;
       bnPrimeChainMultiplier.SetHex(primecoinBlock->mpzPrimeChainMultiplier.get_str(16));
       std::vector<unsigned char> bnSerializeData = bnPrimeChainMultiplier.getvch();
-      size_t lengthBN = bnSerializeData.size();
+	  uint32_t lengthBN = (uint32_t)bnSerializeData.size();
       //memcpy(xptShareToSubmit->chainMultiplier, &bnSerializeData[0], lengthBN);
       //xptShareToSubmit->chainMultiplierSize = lengthBN;
       // prepare raw data of block
@@ -1299,15 +1299,8 @@ void jhMiner_parseCommandline(int argc, char **argv)
 		}
 		else if( memcmp(argument, "-tune", 6)==0 )
 		{
-         // -tune
-			if( cIdx >= argc )
-			{
-            cout << "Missing flag after -tune option" << endl;
-				exit(0);
-			}
-			if (memcmp(argument, "true", 5) == 0 ||  memcmp(argument, "1", 2) == 0)
-				commandlineInput.enableCacheTunning = true;
-
+			// -tune
+			commandlineInput.enableCacheTunning = true;
 			cIdx++;
 		}
       else if( memcmp(argument, "-target", 8)==0 )
@@ -1433,9 +1426,10 @@ bool bOptimalL1SearchInProgress = false;
 #ifdef _WIN32
 static void CacheAutoTuningWorkerThread(bool bEnabled)
 {
-
    if (bOptimalL1SearchInProgress || !bEnabled)
       return;
+
+   printf("L1Cache autotunning in progress...\n");
 
    bOptimalL1SearchInProgress = true;
 
@@ -1533,14 +1527,13 @@ static void RoundSieveAutoTuningWorkerThread(bool bEnabled)
 
          float ratio = (float)(primeStats.nWaveTime == 0 ? 0 : ((float)primeStats.nWaveTime / (float)(primeStats.nWaveTime + primeStats.nTestTime)) * 100.0);
          //JLR DBG
-		 /*
          printf("\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\n");
          printf("WaveTime %u - Wave Round %u - L1CacheSize %u - TotalWaveTime: %u - TotalTestTime: %u - Ratio: %.01f / %.01f %%\n", 
           primeStats.nWaveRound == 0 ? 0 : primeStats.nWaveTime / primeStats.nWaveRound, primeStats.nWaveRound, primeStats.nL1CacheElements,
           primeStats.nWaveTime, primeStats.nTestTime, ratio, 100.0 - ratio);
          printf( "PrimorialMultiplier: %u\n",  primeStats.nPrimorialMultiplier);
          printf("\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\xCD\n");
-         *///JLR DBG END
+         //JLR DBG END
 
          if (ratio == 0) continue; // No weaves occurred, don't change anything.
 

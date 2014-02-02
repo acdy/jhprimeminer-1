@@ -146,12 +146,16 @@ static uint32_t ALWAYS_INLINE ctz( uint32_t x )
 int inline BN2_nz_num_unset_bits_from_lsb(const BIGNUM *a)
 {
 	int32_t bIdx = 0;
-	uint32_t idx = 0;
+	unsigned long idx = 0;
 	int32_t maxIdx = a->top - 1;
 	do 
 	{
 #ifdef _WIN32
-		_BitScanForward((unsigned long *)&idx, a->d[bIdx]);
+#ifdef _WIN64
+		_BitScanForward64(&idx, a->d[bIdx]);
+#else
+		_BitScanForward(&idx, a->d[bIdx]);
+#endif
 #else
 		idx = ctz(a->d[bIdx]);
 #endif
